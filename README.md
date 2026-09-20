@@ -24,6 +24,7 @@ pnpm verify            # typecheck, lint, migration check, then tests
 
 ```text
 AGENTS.md                      AI operating manual
+design.md                      Durable product-owner design brief and Canvas boundaries
 apps/api/                      Hono API foundation
 apps/worker/                   Scheduled/background worker foundation
 packages/contracts/            Shared API and event contracts
@@ -44,6 +45,7 @@ Read [AGENTS.md](AGENTS.md) first. It routes work to the authoritative documenta
 
 ## Documentation index
 
+- [Design brief](design.md)
 - [Project overview](docs/specs/00_project_overview.md)
 - [Product UX flows](docs/specs/01_product_ux_flow_spec.md)
 - [System architecture](docs/specs/02_system_architecture_spec.md)

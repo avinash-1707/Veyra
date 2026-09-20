@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { SearchPrimitive, SectionShell, StatePanel } from "@/components/marketplace";
+
 import { CatalogUnavailable, ProductList } from "../page";
 import { searchCatalog } from "../lib/catalog";
 
@@ -14,26 +16,38 @@ export default async function SearchPage(props: PageProps<"/search">) {
 
   return (
     <main className="page-shell">
-      <h1>Search results</h1>
-      <form action="/search" className="search-form">
-        <label className="sr-only" htmlFor="search-query">
-          Search products
-        </label>
-        <input id="search-query" name="q" defaultValue={result.query} />
-        <button type="submit">Search</button>
-      </form>
-      <div className="filter-row">
-        <Link href="?sort=price_asc">Price: low to high</Link>
-        <Link href="?sort=rating_desc">Top rated</Link>
-        <Link href="/search">Clear filters</Link>
-      </div>
+      <section className="hero">
+        <p className="eyebrow">Conventional discovery</p>
+        <h1>Search results</h1>
+        <p className="max-w-2xl text-lg leading-7 text-muted-foreground">
+          Search stays usable on its own. Optional guidance is available only when you choose it.
+        </p>
+        <div className="mt-6">
+          <SearchPrimitive id="search-query" label="Search products" defaultValue={result.query} />
+        </div>
+        <div className="filter-row" aria-label="Search sort options">
+          <Link href="?sort=price_asc">Price: low to high</Link>
+          <Link href="?sort=rating_desc">Top rated</Link>
+          <Link href="/search">Clear filters</Link>
+          <Link href={`/intelligent-search${result.query.length > 0 ? `?q=${encodeURIComponent(result.query)}` : ""}`}>
+            Try optional guidance
+          </Link>
+        </div>
+      </section>
       {result.total === 0 ? (
-        <section className="state">
-          <h2>No results found</h2>
-          <p>Try different words or clear a filter.</p>
-        </section>
+        <StatePanel
+          title="No results found"
+          description="Try different words, clear a filter, or use guided search for optional suggestions."
+          action={<Link href="/search">Clear filters</Link>}
+        />
       ) : (
-        <ProductList products={result.results} />
+        <SectionShell
+          eyebrow={`${result.total.toLocaleString("en-IN")} matching products`}
+          title={result.query.length > 0 ? `Results for ${result.query}` : "All products"}
+          description="Each card keeps price, seller, rating, and availability visible before you choose a product."
+        >
+          <ProductList products={result.results} />
+        </SectionShell>
       )}
     </main>
   );

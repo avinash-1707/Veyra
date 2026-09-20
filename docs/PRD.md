@@ -238,6 +238,8 @@ Help request
 
 ## 11. UX, accessibility, and trust requirements
 
+The durable brand, visual, interaction, motion, and Canvas exploration boundaries are recorded in [the design brief](../design.md).
+
 - Responsive layouts support mobile, tablet, and desktop shopping.
 - Keyboard navigation, visible focus, semantic controls, contrast-compliant color use, and image alt text are required.
 - Loading, empty, error, and confirmation states are designed for every P0 flow.

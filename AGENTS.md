@@ -6,13 +6,15 @@ Veyra is an AI-native consumer marketplace: it first delivers conventional Amazo
 
 1. Read [docs/progress-tracker.md](docs/progress-tracker.md) for current execution state.
 2. Use the routing table below to select the authoritative document.
-3. Read [the decision log](docs/specs/04_design_decisions_log.md) before proposing a material choice.
-4. Read the relevant source spec and update the execution records when work changes reality.
+3. Read [design.md](design.md) before UI, visual, brand, interaction, motion, or Canvas work.
+4. Read [the decision log](docs/specs/04_design_decisions_log.md) before proposing a material choice.
+5. Read the relevant source spec and update the execution records when work changes reality.
 
 ## Docs
 
 | Document | Source of truth for |
 |---|---|
+| [design.md](design.md) | Durable product-owner design brief, visual direction, accessibility/motion boundaries, and Canvas exploration limits |
 | [docs/PRD.md](docs/PRD.md) | Approved product requirements and release criteria |
 | [docs/technical-architecture.md](docs/technical-architecture.md) | Approved reference architecture |
 | [docs/amazon-baseline-inventory.md](docs/amazon-baseline-inventory.md) | Consumer-parity inventory |
@@ -31,6 +33,7 @@ Veyra is an AI-native consumer marketplace: it first delivers conventional Amazo
 |---|---|
 | Should I build X? | [PRD non-goals/scope](docs/PRD.md#7-scope-and-priorities), then [deferrals](docs/specs/05_future_improvements_v2.md) |
 | What does a shopper see or do? | [UX flows](docs/specs/01_product_ux_flow_spec.md) |
+| What should it look, feel, or move like? | [design brief](design.md) |
 | How should it work or be integrated? | [architecture spec](docs/specs/02_system_architecture_spec.md) |
 | API, data model, state or event design | [architecture spec](docs/specs/02_system_architecture_spec.md) |
 | Security, privacy, auth, or trust boundary | [architecture security](docs/specs/02_system_architecture_spec.md#security-and-trust-boundaries) |

@@ -1,6 +1,10 @@
 import Link from "next/link";
 
-import { getCategories, searchCatalog } from "./lib/catalog";
+import { ProductCard, SearchPrimitive, SectionShell, StatePanel } from "@/components/marketplace";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+import { formatInr, getCategories, searchCatalog } from "./lib/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -11,34 +15,68 @@ export default async function Home() {
 
   return (
     <main className="page-shell">
-      <section className="hero">
-        <p className="eyebrow">India · simulated marketplace</p>
-        <h1>Find what fits your everyday.</h1>
-        <form action="/search" className="search-form">
-          <label className="sr-only" htmlFor="home-search">
-            Search products
-          </label>
-          <input id="home-search" name="q" placeholder="Search bags, audio, and more" />
-          <button type="submit">Search</button>
-        </form>
-        <p>
-          <Link href="/intelligent-search">Try optional intelligent search</Link>
-        </p>
+      <section className="hero grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-end">
+        <div>
+          <p className="eyebrow">India · simulated marketplace</p>
+          <h1>Shop with clear facts before guidance.</h1>
+          <p className="max-w-2xl text-lg leading-7 text-muted-foreground">
+            Browse a conventional marketplace first, with price, rating, availability, and seller context kept visible
+            before any optional concierge help.
+          </p>
+          <div className="mt-6">
+            <SearchPrimitive
+              id="home-search"
+              label="Search products"
+              placeholder="Search bags, audio, kitchen, and more"
+            />
+          </div>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Prefer guided discovery?{" "}
+            <Link className="font-semibold" href="/intelligent-search">
+              Try optional intelligent search
+            </Link>
+            , or keep using search and category browsing without it.
+          </p>
+        </div>
+        <aside
+          className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]"
+          aria-label="Marketplace promise"
+        >
+          <p className="eyebrow">Concierge boundary</p>
+          <h2 className="mt-2 text-2xl">Guidance never replaces checkout facts.</h2>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            Prices, availability, delivery estimates, returns, and payments stay on conventional server backed paths.
+          </p>
+        </aside>
       </section>
-      <section aria-labelledby="categories-heading">
-        <h2 id="categories-heading">Shop categories</h2>
+      <SectionShell
+        eyebrow="Browse by department"
+        title="Shop categories"
+        description="Start with familiar shelves, then narrow by search when you know what matters."
+      >
         <ul className="category-list">
           {categories.map((category) => (
             <li key={category.slug}>
-              <Link href={`/c/${category.slug}`}>{category.name}</Link>
+              <Link href={`/c/${category.slug}`}>
+                <span className="block text-base">{category.name}</span>
+                <span className="mt-2 block text-sm font-normal text-muted-foreground">View available products</span>
+              </Link>
             </li>
           ))}
         </ul>
-      </section>
-      <section aria-labelledby="featured-heading">
-        <h2 id="featured-heading">Featured products</h2>
+      </SectionShell>
+      <SectionShell
+        eyebrow="Editorial picks"
+        title="Featured products"
+        description="Scan product essentials before opening a detail page."
+        action={
+          <Link className={cn(buttonVariants({ variant: "outline", size: "sm" }))} href="/search">
+            View all products
+          </Link>
+        }
+      >
         <ProductList products={products.results} />
-      </section>
+      </SectionShell>
     </main>
   );
 }
@@ -47,25 +85,45 @@ export function ProductList({ products }: { products: Awaited<ReturnType<typeof 
   return (
     <ul className="product-grid">
       {products.map((product) => (
-        <li key={product.slug} className="product-card">
-          <p className="eyebrow">{product.category.name}</p>
-          <h3>
-            <Link href={`/p/${product.slug}`}>{product.title}</Link>
-          </h3>
-          <p>{product.brand}</p>
-          <p>{product.rating.toFixed(1)} ★</p>
+        <li key={product.slug}>
+          <ProductCard
+            href={`/p/${product.slug}`}
+            title={product.title}
+            brand={product.brand}
+            category={product.category.name}
+            price={formatInr(product.selectedOffer.price.amountMinor)}
+            rating={`${product.rating.toFixed(1)} ★`}
+            availability={formatAvailability(product.selectedOffer.availability)}
+            delivery={`Sold by ${product.selectedOffer.sellerName}`}
+            evidence={`${product.reviewCount.toLocaleString("en-IN")} shopper reviews`}
+          />
         </li>
       ))}
     </ul>
   );
 }
 
+function formatAvailability(
+  availability: Awaited<ReturnType<typeof searchCatalog>>["results"][number]["selectedOffer"]["availability"]
+): string {
+  if (availability === "available") return "Available from selected offer";
+  if (availability === "withdrawn") return "Offer currently withdrawn";
+  return "Currently unavailable";
+}
+
 export function CatalogUnavailable() {
   return (
-    <main className="page-shell state">
-      <h1>Catalog is temporarily unavailable</h1>
-      <p>Try again shortly. Search and browsing do not depend on AI guidance.</p>
-      <Link href="/">Retry</Link>
+    <main className="page-shell">
+      <StatePanel
+        title="Catalog is temporarily unavailable"
+        description="Try again shortly. Search and browsing do not depend on optional guidance."
+        tone="danger"
+        action={
+          <Link className={cn(buttonVariants({ variant: "outline" }))} href="/">
+            Retry catalog
+          </Link>
+        }
+      />
     </main>
   );
 }

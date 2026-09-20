@@ -2,7 +2,7 @@
 
 **Status:** Approved planning baseline  
 **Last updated:** 2026-09-20  
-**Companions:** [UX flows](01_product_ux_flow_spec.md) · [architecture](02_system_architecture_spec.md) · [decisions](04_design_decisions_log.md)  
+**Companions:** [design brief](../../design.md) · [UX flows](01_product_ux_flow_spec.md) · [architecture](02_system_architecture_spec.md) · [decisions](04_design_decisions_log.md)  
 **Source of truth for:** What Veyra is, why it exists, and its approved scope.
 
 ## One-line summary
@@ -20,7 +20,7 @@ Pair conventional category/search, evaluation, cart, checkout, tracking, and ret
 - **Support seeker:** tracks, cancels, returns, replaces, or understands a refund.
 
 ## Product pillars
-Consumer-first scope; evidence over magic; complete vertical slices; progressive complexity; honest simulation. Details: [PRD §6](../PRD.md#6-product-principles).
+Consumer-first scope; evidence over magic; complete vertical slices; progressive complexity; honest simulation. Details: [PRD §6](../PRD.md#6-product-principles). For brand feel, visual direction, interaction/motion policy, accessibility boundaries, and Canvas exploration limits, use [design.md](../../design.md).
 
 ## V1 scope
 The P0 baseline is home/category discovery, conventional search/filter/sort, product/offer/variant detail, comparison, persistent cart, mock checkout, order confirmation/tracking, reviews/Q&A, and returns/refunds. AI enhancements are enabled only after their conventional counterpart works. See [PRD §7](../PRD.md#7-scope-and-priorities).

@@ -2,7 +2,7 @@
 
 **Status:** Approved planning baseline  
 **Last updated:** 2026-09-20  
-**Companions:** [overview](00_project_overview.md) · [architecture](02_system_architecture_spec.md)  
+**Companions:** [overview](00_project_overview.md) · [design brief](../../design.md) · [architecture](02_system_architecture_spec.md)  
 **Scope:** User-visible consumer behavior; implementation mechanisms belong in 02.
 
 ## How to read this doc
@@ -33,7 +33,7 @@ Shopper: home, category, or direct search. Returning shopper: account, history, 
 Persistent header/location/account/cart; home/category; search; detail; compare; cart; checkout; confirmation; account/orders; tracking; return/review; help/support.
 
 ## Cross-cutting states
-All flows require designed loading, empty, error, offline/degraded, permission, and notification states; keyboard access, focus, semantic controls, contrast, and responsive layouts are mandatory. Mock delivery/payment must never be represented as a real commitment.
+All flows require designed loading, empty, error, offline/degraded, permission, and notification states; keyboard access, focus, semantic controls, contrast, and responsive layouts are mandatory. Use [design.md](../../design.md) for the durable visual, interaction, motion, and Canvas exploration boundaries. Mock delivery/payment must never be represented as a real commitment.
 
 ## Route and state conventions
 Routes are illustrative URL contracts for the web experience; exact framework routing remains an implementation concern. Search state is shareable and URL-persisted. Account-owned routes must not expose resource existence to a non-owner. Every command has a pending state that prevents accidental duplicate submission while preserving an accessible retry path after a recoverable failure.
