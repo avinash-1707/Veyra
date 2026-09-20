@@ -1,7 +1,7 @@
 import type { AppEnvironment } from "@veyra/config";
 import { selectRouteLimitPolicy } from "@veyra/config";
 
-import { checkOrigin } from "./auth.js";
+import { checkOrigin } from "../modules/identity/auth.js";
 import type { ApiErrorCode } from "@veyra/contracts";
 import type { Context, MiddlewareHandler } from "hono";
 

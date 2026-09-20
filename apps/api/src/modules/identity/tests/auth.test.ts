@@ -2,8 +2,8 @@ import { parseAppEnvironment } from "@veyra/config";
 import { describe, expect, it } from "vitest";
 
 import { checkOrigin, corsHeaders, sessionPolicy, trustedOrigins } from "../auth.js";
-import { resetLocalRateLimitsForTests } from "../http.js";
-import { app } from "../index.js";
+import { resetLocalRateLimitsForTests } from "../../../platform/http.js";
+import { app } from "../../../index.js";
 
 describe("auth and browser protection", () => {
   it("uses the approved session and recovery-token policy", () => {

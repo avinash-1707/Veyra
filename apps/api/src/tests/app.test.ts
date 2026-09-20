@@ -1,7 +1,7 @@
 import { apiErrorResponseSchema, productSeedListResponseSchema } from "@veyra/contracts";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { resetLocalRateLimitsForTests } from "../http.js";
+import { resetLocalRateLimitsForTests } from "../platform/http.js";
 import { app } from "../index.js";
 
 describe("api foundation", () => {

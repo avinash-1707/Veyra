@@ -6,8 +6,8 @@ import {
 } from "@veyra/contracts";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { resetLocalRateLimitsForTests } from "../http.js";
-import { app } from "../index.js";
+import { resetLocalRateLimitsForTests } from "../../../platform/http.js";
+import { app } from "../../../index.js";
 
 const backpackOfferId = "018f3f7d-486c-7d73-9e13-83d8d0c75614";
 const withdrawnEarbudsOfferId = "018f3f7d-5b68-7aef-9e10-2d890fc8a615";

@@ -10,7 +10,7 @@ import {
   type SearchSort
 } from "@veyra/contracts";
 
-import { catalogCategories, catalogProducts, type CatalogProduct } from "./discoveryCatalog.js";
+import { catalogCategories, catalogProducts, type CatalogProduct } from "../catalog/catalogFixture.js";
 
 const expeditedPinPrefixes = new Set(["11", "40", "41", "50", "56", "60", "70", "80"]);
 const freeStandardShippingThresholdMinor = 49_900;

@@ -12,9 +12,9 @@ import {
 } from "@veyra/contracts";
 import { Hono } from "hono";
 
-import { catalogSeedProducts } from "./catalogSeed.js";
-import { estimateDelivery, getProduct, getProductByOffer, listCategories, searchProducts, searchSuggestions } from "./discovery.js";
-import { browserProtectionMiddleware, fail, ok, policyMiddleware, requestIdMiddleware, securityHeadersMiddleware, type AppBindings } from "./http.js";
+import { catalogSeedProducts } from "./modules/catalog/catalogSeed.js";
+import { estimateDelivery, getProduct, getProductByOffer, listCategories, searchProducts, searchSuggestions } from "./modules/discovery/discovery.js";
+import { browserProtectionMiddleware, fail, ok, policyMiddleware, requestIdMiddleware, securityHeadersMiddleware, type AppBindings } from "./platform/http.js";
 
 export const appEnvironment = parseAppEnvironment(process.env);
 
