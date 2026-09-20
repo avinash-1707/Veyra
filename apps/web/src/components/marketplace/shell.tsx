@@ -1,12 +1,5 @@
 import Link from "next/link";
-
-const navigationLinks = [
-  { href: "/search", label: "Search" },
-  { href: "/cart", label: "Cart" },
-  { href: "/orders", label: "Orders" },
-  { href: "/help", label: "Support" },
-  { href: "/intelligent-search", label: "Guided search" }
-] as const;
+import { FiSearch, FiShoppingCart } from "react-icons/fi";
 
 const footerLinks = [
   { href: "/help", label: "Support and returns" },
@@ -36,12 +29,27 @@ export function SiteHeader() {
         <Link className="brand-mark" href="/" aria-label="Veyra home">
           Veyra
         </Link>
-        <div className="nav-links">
-          {navigationLinks.map((link) => (
-            <Link key={link.href} href={link.href}>
-              {link.label}
-            </Link>
-          ))}
+        <form action="/search" className="nav-search-form" method="get">
+          <label className="sr-only" htmlFor="marketplace-search">
+            Search products, brands, and categories
+          </label>
+          <FiSearch className="nav-search-icon" aria-hidden="true" />
+          <input
+            id="marketplace-search"
+            name="q"
+            placeholder="Search products, brands, and categories"
+            type="search"
+          />
+        </form>
+        <div className="nav-actions">
+          <Link href="/orders">Orders</Link>
+          <Link className="guided-search-link" href="/intelligent-search">
+            <span aria-hidden="true">✨</span>
+            Guided Search
+          </Link>
+          <Link className="cart-link" href="/cart" aria-label="View cart">
+            <FiShoppingCart aria-hidden="true" />
+          </Link>
         </div>
       </nav>
     </header>
