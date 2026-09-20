@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { FiSearch, FiShoppingCart } from "react-icons/fi";
+import { FiShoppingCart } from "react-icons/fi";
+
+import { NavbarSearch } from "./navbar-search";
 
 const footerLinks = [
   { href: "/help", label: "Support and returns" },
@@ -29,18 +31,7 @@ export function SiteHeader() {
         <Link className="brand-mark" href="/" aria-label="Veyra home">
           Veyra
         </Link>
-        <form action="/search" className="nav-search-form" method="get">
-          <label className="sr-only" htmlFor="marketplace-search">
-            Search products, brands, and categories
-          </label>
-          <FiSearch className="nav-search-icon" aria-hidden="true" />
-          <input
-            id="marketplace-search"
-            name="q"
-            placeholder="Search products, brands, and categories"
-            type="search"
-          />
-        </form>
+        <NavbarSearch />
         <div className="nav-actions">
           <Link href="/orders">Orders</Link>
           <Link className="guided-search-link" href="/intelligent-search">
@@ -61,8 +52,8 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="site-footer-inner">
         <p className="footer-disclosure">
-          Veyra is an India and INR simulation for marketplace evaluation. Payments, delivery dates, seller terms, refunds,
-          and AI guidance are informational prototype surfaces until approved production integrations exist.
+          Veyra is an India and INR simulation for marketplace evaluation. Payments, delivery dates, seller terms,
+          refunds, and AI guidance are informational prototype surfaces until approved production integrations exist.
         </p>
         <ul className="footer-links" aria-label="Footer links">
           {footerLinks.map((link) => (

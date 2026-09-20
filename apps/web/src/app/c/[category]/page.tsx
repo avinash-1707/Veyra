@@ -24,21 +24,21 @@ export default async function CategoryPage(props: PageProps<"/c/[category]">) {
           delivery, and policy facts.
         </p>
         <div className="filter-row" aria-label="Category actions">
-          <Link href="/search">Search all products</Link>
-          <Link href={`/intelligent-search?q=${encodeURIComponent(categoryName)}`}>Try optional guidance</Link>
+          <Link href="/">Browse departments</Link>
+          <Link href={`/intelligent-search?q=${encodeURIComponent(categoryName)}`}>Use Guided Search</Link>
         </div>
       </section>
       {result.total === 0 ? (
         <StatePanel
           title="No products are available here"
-          description="Choose another category or search the catalog. Conventional browsing remains available without guidance."
-          action={<Link href="/search">Search the catalog</Link>}
+          description="Choose another category or use Guided Search to describe what you need."
+          action={<Link href="/">Browse departments</Link>}
         />
       ) : (
         <SectionShell
           eyebrow={`${result.total.toLocaleString("en-IN")} products`}
           title={`Available in ${categoryName}`}
-          description="Structured cards keep commerce facts separate from any optional guidance."
+          description="Structured cards keep product information clear as you compare products."
         >
           <ProductList products={result.results} />
         </SectionShell>

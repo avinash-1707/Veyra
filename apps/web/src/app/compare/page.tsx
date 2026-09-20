@@ -154,8 +154,8 @@ export default async function ComparePage(props: {
       </SectionShell>
 
       <p className="mt-8">
-        <Link className={buttonVariants({ variant: "outline" })} href="/search">
-          Add another product from search
+        <Link className={buttonVariants({ variant: "outline" })} href="/">
+          Browse more products
         </Link>
       </p>
     </main>

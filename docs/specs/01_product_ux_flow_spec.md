@@ -9,13 +9,13 @@
 Each flow defines what a shopper experiences. Policies and state enforcement are specified in the architecture; product rationale is in 00.
 
 ## Flow map
-`Home/category → Search/filter → Product/compare → Cart → Checkout → Confirmation → Tracking → Review or return → Support`
+`Home/category → navigation search or Guided Search → Product/compare → Cart → Checkout → Confirmation → Tracking → Review or return → Support`
 
 ## Personas & entry points
 Shopper: home, category, or direct search. Returning shopper: account, history, lists, or notifications. Support seeker: help hub or authenticated order detail.
 
 ## 1. Discover, search, and evaluate
-**Trigger/entry:** home, category, or text/natural-language query. **States:** loading skeleton; results with URL-persisted query/filter/sort; empty results with related searches and editable filters; provider fallback retaining conventional search; product detail with media, variants, offers, facts, reviews, delivery promise; compare table for one to three products. **Permissions:** public browsing; personalization is controllable. **Success:** shopper selects a valid offer/variant and adds it to cart. **Edges:** unavailable offer, invalid intent interpretation, missing comparison fields, address absent, image/load failure. AI interpretation and reasons are labelled guidance, editable, and evidence-backed.
+**Trigger/entry:** home, category, navigation search, or natural-language query. **States:** loading skeleton; navigation suggestions; Guided Search results with a URL-persisted query and editable interpretation; empty results with a browse recovery; product detail with media, variants, offers, facts, reviews, delivery promise; compare table for one to three products. **Permissions:** public browsing; personalization is controllable. **Success:** shopper selects a valid offer/variant and adds it to cart. **Edges:** unavailable offer, invalid intent interpretation, missing comparison fields, address absent, image/load failure. Guided Search interpretation and reasons are labelled guidance, editable, and evidence-backed.
 
 ## 2. Cart and simulated checkout
 **Trigger/entry:** add-to-cart or Buy Now. **States:** persistent cart, quantity/variant edits, unavailable-item recovery, address selection, mock payment selection, delivery choice, coupon/promotion state where enabled, review, confirmation. **Permissions:** checkout requires an authenticated shopper, address, and payment token. **Success:** a confirmed order with accurate server-calculated totals and a receipt. **Edges:** reservation conflict, expired checkout, payment simulation failure, invalid address, duplicate submit; show a clear recoverable result and never duplicate an order.
@@ -30,7 +30,7 @@ Shopper: home, category, or direct search. Returning shopper: account, history, 
 **Trigger/entry:** help hub or order context. **States:** authenticated context, supported intent, policy/eligibility result, proposed action, explicit confirmation, updated timeline. **Success:** supported tracking/cancel/return/refund action resolves through existing deterministic endpoint. **Edges:** no matching order, unsupported intent, provider failure, permission denial; provide conventional self-service routes.
 
 ## Screen or interface inventory
-Persistent header/location/account/cart; home/category; search; detail; compare; cart; checkout; confirmation; account/orders; tracking; return/review; help/support.
+Persistent header/location/account/cart; home/category; Guided Search; detail; compare; cart; checkout; confirmation; account/orders; tracking; return/review; help/support.
 
 ## Cross-cutting states
 All flows require designed loading, empty, error, offline/degraded, permission, and notification states; keyboard access, focus, semantic controls, contrast, and responsive layouts are mandatory. Use [design.md](../../design.md) for the durable visual, interaction, motion, and Canvas exploration boundaries. Mock delivery/payment must never be represented as a real commitment.
@@ -41,7 +41,7 @@ Routes are illustrative URL contracts for the web experience; exact framework ro
 | Surface | Illustrative route | Primary state source |
 |---|---|---|
 | Home/category | `/`, `/c/:category` | catalog and discovery query |
-| Search | `/search?q=&sort=&...` | URL query plus server results |
+| Guided Search | `/intelligent-search?q=` | URL query plus catalog-backed guided results |
 | Product | `/p/:slug` | canonical product and selected offer/variant |
 | Compare | `/compare?products=` | URL-selected product identifiers |
 | Cart | `/cart` | shopper or guest cart |
@@ -52,8 +52,8 @@ Routes are illustrative URL contracts for the web experience; exact framework ro
 
 ## Interaction contracts
 ### Discovery and evaluation
-- Search preserves the shopper's typed query. An AI interpretation supplements it; accepting, editing, or dismissing that interpretation never erases conventional filters.
-- Filters expose their applied state, support removal without a full query reset, and produce a URL that recreates the conventional result set for the supported locale.
+- Navigation search preserves the shopper's typed query, shows debounced catalog suggestions, and opens Guided Search with the chosen or submitted query.
+- Guided Search exposes an editable interpretation and its recognized constraints before results are used for product evaluation.
 - Results distinguish product facts from the currently selected or lowest qualifying offer. Price, stock, and delivery messages identify their offer and address context.
 - A compare table uses a stable normalized field order. Missing information is rendered as unavailable, not inferred from a similar variant or product.
 

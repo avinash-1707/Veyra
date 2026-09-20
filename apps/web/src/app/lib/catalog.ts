@@ -1,3 +1,8 @@
+export type SearchSuggestion = {
+  type: "query" | "category";
+  value: string;
+};
+
 export type CatalogResult = {
   slug: string;
   title: string;
@@ -33,6 +38,34 @@ function isEnvelope<Data>(value: unknown): value is ApiEnvelope<Data> {
 
 export function formatInr(amountMinor: number): string {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(amountMinor / 100);
+}
+
+export async function getSearchSuggestions(query: string): Promise<SearchSuggestion[]> {
+  const response = await fetch(`${apiOrigin}/v1/search/suggestions?q=${encodeURIComponent(query)}`, {
+    cache: "no-store"
+  });
+  if (!response.ok) throw new Error("Catalog service is unavailable.");
+
+  const body: unknown = await response.json();
+  if (!isSuggestionsEnvelope(body)) throw new Error("Catalog service returned an invalid response.");
+  return body.data;
+}
+
+function isSuggestionsEnvelope(value: unknown): value is ApiEnvelope<SearchSuggestion[]> {
+  return isRecord(value) && Array.isArray(value.data) && value.data.every(isSearchSuggestion);
+}
+
+function isSearchSuggestion(value: unknown): value is SearchSuggestion {
+  return (
+    isRecord(value) &&
+    (value.type === "query" || value.type === "category") &&
+    typeof value.value === "string" &&
+    value.value.length > 0
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }
 
 export async function getCategories() {

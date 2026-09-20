@@ -15,10 +15,26 @@ export default async function CartPage() {
   if (cart === undefined) return <CatalogUnavailable />;
 
   const totalRows = [
-    { label: "Subtotal", value: formatInr(cart.totals.itemSubtotal.amountMinor), helper: "Item prices from the server cart" },
-    { label: "Discount", value: formatInr(cart.totals.discountTotal.amountMinor), helper: "Applied before GST calculation" },
-    { label: "Delivery", value: formatInr(cart.totals.shipping.amountMinor), helper: "PIN aware simulated delivery charge" },
-    { label: "Estimated GST", value: formatInr(cart.totals.estimatedTax.amountMinor), helper: "India INR simulation at quote time" }
+    {
+      label: "Subtotal",
+      value: formatInr(cart.totals.itemSubtotal.amountMinor),
+      helper: "Item prices from the server cart"
+    },
+    {
+      label: "Discount",
+      value: formatInr(cart.totals.discountTotal.amountMinor),
+      helper: "Applied before GST calculation"
+    },
+    {
+      label: "Delivery",
+      value: formatInr(cart.totals.shipping.amountMinor),
+      helper: "PIN aware simulated delivery charge"
+    },
+    {
+      label: "Estimated GST",
+      value: formatInr(cart.totals.estimatedTax.amountMinor),
+      helper: "India INR simulation at quote time"
+    }
   ] as const;
 
   return (
@@ -27,16 +43,17 @@ export default async function CartPage() {
         <p className="eyebrow">Server checked cart</p>
         <h1>Your cart is priced from saved commerce state.</h1>
         <p className="max-w-2xl text-base leading-7 text-muted-foreground">
-          Veyra shows server totals only. GST, delivery, discounts, and checkout readiness are recalculated before any simulated order is confirmed.
+          Veyra shows server totals only. GST, delivery, discounts, and checkout readiness are recalculated before any
+          simulated order is confirmed.
         </p>
       </section>
 
       {cart.items.length === 0 ? (
         <StatePanel
           title="Your cart is empty"
-          description="Add products from search before starting simulated checkout. Conventional shopping works without AI guidance."
+          description="Use the navigation search or browse departments before starting simulated checkout. Conventional shopping works without AI guidance."
           action={
-            <Link className={buttonVariants()} href="/search">
+            <Link className={buttonVariants()} href="/">
               Browse products
             </Link>
           }
@@ -65,7 +82,8 @@ export default async function CartPage() {
                                 </Link>
                               </CardTitle>
                               <p className="mt-1 text-sm text-muted-foreground">
-                                {item.product.brand} · {item.product.selectedVariant.name} · Sold by {item.product.selectedOffer.sellerName}
+                                {item.product.brand} · {item.product.selectedVariant.name} · Sold by{" "}
+                                {item.product.selectedOffer.sellerName}
                               </p>
                             </div>
                             <Badge variant={isAvailable ? "secondary" : "destructive"}>
@@ -102,11 +120,17 @@ export default async function CartPage() {
               description="Saved items stay out of server totals until restored through the cart API."
             >
               {cart.savedForLater.length === 0 ? (
-                <StatePanel title="No saved items" description="Products you save for later will appear here with their last known quantity." />
+                <StatePanel
+                  title="No saved items"
+                  description="Products you save for later will appear here with their last known quantity."
+                />
               ) : (
                 <ul className="grid gap-3" aria-label="Saved for later items">
                   {cart.savedForLater.map((item) => (
-                    <li key={item.id} className="rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
+                    <li
+                      key={item.id}
+                      className="rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]"
+                    >
                       <Link className="font-semibold text-foreground no-underline" href={`/p/${item.product.slug}`}>
                         {item.product.title}
                       </Link>

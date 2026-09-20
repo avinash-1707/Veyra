@@ -23,32 +23,31 @@ export default async function IntelligentSearchPage(props: PageProps<"/intellige
       <main className="page-shell">
         <section className="hero grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-end">
           <div>
-            <p className="eyebrow">Optional guidance</p>
-            <h1>Describe the shopping job.</h1>
+            <p className="eyebrow">Guided Search</p>
+            <h1>Describe what you are looking for.</h1>
             <p className="max-w-2xl text-lg leading-7 text-muted-foreground">
-              Use this concierge surface when you want help translating needs into catalog filters. You can switch back
-              to conventional search at any time.
+              Share your product need, budget, use, and priorities in plain language to find catalog matches that fit.
             </p>
             <div className="mt-6">
               <SearchPrimitive
                 action="/intelligent-search"
                 id="intent-query"
                 label="Describe what you need"
-                placeholder="Laptop under ₹1.2 lakh with long battery life"
-                submitLabel="Get guidance"
+                placeholder="Laptop under ₹1.2 lakh for travel with long battery life"
+                submitLabel="Find matches"
               />
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              Prefer baseline discovery? <Link href="/search">Use conventional search</Link>.
+              Looking for a specific product? Use the search field in the navigation.
             </p>
           </div>
           <GuidanceEvidencePanel
-            title="Safe by default"
-            summary="This route is labelled optional and uses the deterministic catalog fallback while provider calls are disabled."
+            title="Catalog matches with context"
+            summary="Tell Veyra what you need, and review the reasons and tradeoffs behind each match."
             evidence={[
-              "It cannot change price, stock, delivery, policy, cart, or checkout decisions.",
-              "Results link to the same product detail pages used by baseline discovery.",
-              "If guidance is unavailable, conventional search remains the recovery path."
+              "Your product need, budget, use, and priorities shape the matches.",
+              "Open a product page for its current price, delivery, and policy details.",
+              "Use search when you know the product, brand, or category you want."
             ]}
           />
         </section>
@@ -64,11 +63,10 @@ export default async function IntelligentSearchPage(props: PageProps<"/intellige
     <main className="page-shell">
       <section className="hero grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-end">
         <div>
-          <p className="eyebrow">Optional guidance · deterministic fallback active</p>
-          <h1>Intelligent search</h1>
+          <p className="eyebrow">Guided Search</p>
+          <h1>Matches for your needs</h1>
           <p className="max-w-2xl text-lg leading-7 text-muted-foreground">
-            The interpretation is editable, and every recommendation still opens the normal product route for commerce
-            facts.
+            Refine what you need, then review each match and its reasons and tradeoffs.
           </p>
           <div className="mt-6">
             <SearchPrimitive
@@ -76,27 +74,27 @@ export default async function IntelligentSearchPage(props: PageProps<"/intellige
               id="intent-query"
               label="Describe what you need"
               defaultValue={query}
-              submitLabel="Update guidance"
+              submitLabel="Refine your search"
             />
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
-            <Link href={`/search?q=${encodeURIComponent(query)}`}>Use conventional search and filters instead</Link>
+            Use the navigation search to look for a product, brand, or category.
           </p>
         </div>
         <GuidanceEvidencePanel
-          title="Fallback safe guidance"
-          summary="Provider calls are disabled for this local slice, so guidance is generated from deterministic catalog facts."
+          title="Guided Search"
+          summary="Catalog matches include context to help you compare products."
           evidence={[
-            `Provider status: ${result.provider.status}`,
-            `Fallback mode: ${result.provider.fallback}`,
-            "Price, stock, delivery, cart, and checkout stay server authoritative."
+            "Review the reasons and tradeoffs for each match.",
+            "Verify current product, price, delivery, and policy details on the product page.",
+            "Review checkout details before placing an order."
           ]}
         />
       </section>
       <SectionShell
         eyebrow="Editable interpretation"
         title="What Veyra understood"
-        description="Review these signals before trusting the order of results. Use baseline search if the interpretation misses your intent."
+        description="Review these signals and refine your search if they do not match what you need."
       >
         <div className="grid gap-4 rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)] md:grid-cols-3">
           <div>
@@ -125,22 +123,19 @@ export default async function IntelligentSearchPage(props: PageProps<"/intellige
       </SectionShell>
       {result.results.length === 0 ? (
         <StatePanel
-          title="No guided matches"
-          description="Edit the query or use conventional filters. Baseline search remains available without guidance."
+          title="No matches for your needs"
+          description="Refine your search or look for a product, brand, or category."
           action={
-            <Link
-              className={cn(buttonVariants({ variant: "outline" }))}
-              href={`/search?q=${encodeURIComponent(query)}`}
-            >
-              Open conventional search
+            <Link className={cn(buttonVariants({ variant: "outline" }))} href="/">
+              Browse departments
             </Link>
           }
         />
       ) : (
         <SectionShell
-          eyebrow={`${result.results.length.toLocaleString("en-IN")} guided matches`}
-          title="Guided matches from catalog facts"
-          description="Reasons and tradeoffs are explanatory only. Open each product to verify current offer, delivery, and policy details."
+          eyebrow={`${result.results.length.toLocaleString("en-IN")} matches`}
+          title="Matches for your needs"
+          description="Review the reasons and tradeoffs, then verify current product, price, delivery, and policy details on each product page."
         >
           <ul className="product-grid">
             {result.results.map((entry) => (

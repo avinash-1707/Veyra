@@ -155,7 +155,9 @@
     color: var(--accent);
     text-decoration-thickness: 0.08em;
     text-underline-offset: 0.18em;
-    transition: color 180ms var(--motion-standard), opacity 180ms var(--motion-standard);
+    transition:
+      color 180ms var(--motion-standard),
+      opacity 180ms var(--motion-standard);
   }
 
   a:hover {
@@ -287,7 +289,9 @@
     background: var(--card);
     color: var(--foreground);
     padding: 0.625rem 0.75rem 0.625rem 2.75rem;
-    transition: border-color 180ms var(--motion-standard), box-shadow 180ms var(--motion-standard);
+    transition:
+      border-color 180ms var(--motion-standard),
+      box-shadow 180ms var(--motion-standard);
   }
 
   .nav-search-form input::placeholder {
@@ -299,6 +303,62 @@
     z-index: 1;
     border-color: var(--ring);
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--ring) 18%, transparent);
+  }
+
+  .nav-search-suggestions {
+    position: absolute;
+    z-index: 2;
+    inset-block-start: calc(100% + 0.5rem);
+    inset-inline: 0;
+    display: grid;
+    gap: 0.25rem;
+    max-height: min(20rem, calc(100vh - 7rem));
+    overflow-y: auto;
+    margin: 0;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--popover);
+    box-shadow: var(--shadow-card);
+    list-style: none;
+    transform-origin: top center;
+    transition:
+      opacity 180ms var(--motion-standard),
+      transform 180ms var(--motion-standard);
+  }
+
+  .nav-search-suggestions li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-width: 0;
+    min-height: 2.75rem;
+    border-radius: var(--radius-md);
+    color: var(--foreground);
+    cursor: pointer;
+    padding: 0.5rem 0.75rem;
+    transition:
+      background-color 180ms var(--motion-standard),
+      color 180ms var(--motion-standard),
+      transform 180ms var(--motion-standard);
+  }
+
+  .nav-search-suggestions li:hover,
+  .nav-search-suggestions li.is-active {
+    background: var(--secondary);
+    color: var(--foundation-accent-strong);
+  }
+
+  .nav-search-suggestions li:active {
+    transform: translateY(1px) scale(0.99);
+  }
+
+  .nav-search-suggestion-type {
+    flex: 0 0 auto;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    font-weight: 600;
   }
 
   .nav-actions {
@@ -321,7 +381,10 @@
     font-weight: 600;
     padding: 0.5rem 0.75rem;
     text-decoration: none;
-    transition: background-color 180ms var(--motion-standard), color 180ms var(--motion-standard), transform 180ms var(--motion-standard);
+    transition:
+      background-color 180ms var(--motion-standard),
+      color 180ms var(--motion-standard),
+      transform 180ms var(--motion-standard);
   }
 
   .nav-actions > a:hover,
@@ -446,7 +509,9 @@
     background: var(--card);
     color: var(--foreground);
     padding: 0.75rem 1rem;
-    transition: border-color 180ms var(--motion-standard), box-shadow 180ms var(--motion-standard);
+    transition:
+      border-color 180ms var(--motion-standard),
+      box-shadow 180ms var(--motion-standard);
   }
 
   .search-form input::placeholder {
@@ -466,7 +531,9 @@
     color: var(--primary-foreground);
     padding: 0.75rem 1rem;
     font-weight: 700;
-    transition: transform 180ms var(--motion-standard), background-color 180ms var(--motion-standard);
+    transition:
+      transform 180ms var(--motion-standard),
+      background-color 180ms var(--motion-standard);
   }
 
   .search-form button:hover {
@@ -504,14 +571,19 @@
     color: var(--foreground);
     font-weight: 700;
     text-decoration: none;
-    transition: transform 180ms var(--motion-standard), border-color 180ms var(--motion-standard), box-shadow 180ms var(--motion-standard);
+    transition:
+      transform 180ms var(--motion-standard),
+      border-color 180ms var(--motion-standard),
+      box-shadow 180ms var(--motion-standard);
   }
 
   .category-list a:hover,
   .product-card:hover {
     border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
     transform: translateY(-2px);
-    box-shadow: 0 1px 1px rgb(32 23 15 / 0.04), 0 22px 70px rgb(77 48 24 / 0.12);
+    box-shadow:
+      0 1px 1px rgb(32 23 15 / 0.04),
+      0 22px 70px rgb(77 48 24 / 0.12);
   }
 
   .product-grid {
@@ -519,7 +591,10 @@
   }
 
   .product-card {
-    transition: transform 180ms var(--motion-standard), border-color 180ms var(--motion-standard), box-shadow 180ms var(--motion-standard);
+    transition:
+      transform 180ms var(--motion-standard),
+      border-color 180ms var(--motion-standard),
+      box-shadow 180ms var(--motion-standard);
   }
 
   .product-card h3 {

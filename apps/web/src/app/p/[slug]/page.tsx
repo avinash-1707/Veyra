@@ -26,7 +26,7 @@ export default async function ProductPage(props: PageProps<"/p/[slug]">) {
   return (
     <main className="page-shell">
       <div className="mb-8">
-        <Link className={buttonVariants({ variant: "ghost", size: "sm" })} href="/search">
+        <Link className={buttonVariants({ variant: "ghost", size: "sm" })} href="/">
           Continue browsing
         </Link>
       </div>

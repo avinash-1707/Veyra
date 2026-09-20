@@ -1,3 +1,4 @@
+export { NavbarSearch } from "./navbar-search";
 export { AppShell, SiteFooter, SiteHeader } from "./shell";
 export {
   GuidanceEvidencePanel,

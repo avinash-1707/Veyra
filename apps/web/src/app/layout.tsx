@@ -15,12 +15,12 @@ export const metadata: Metadata = {
     default: "Veyra",
     template: "%s · Veyra"
   },
-  description: "A warm, simulated India marketplace with optional evidence grounded AI guidance.",
+  description: "An AI-native India marketplace with Guided Search and clear product information.",
   applicationName: "Veyra",
   metadataBase: new URL("https://veyra.local"),
   openGraph: {
     title: "Veyra",
-    description: "A warm, simulated India marketplace with optional evidence grounded AI guidance.",
+    description: "An AI-native India marketplace with Guided Search and clear product information.",
     locale: "en_IN",
     siteName: "Veyra",
     type: "website"

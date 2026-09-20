@@ -15,10 +15,22 @@ export default async function CheckoutPage() {
   if (cart === undefined) return <CatalogUnavailable />;
 
   const totalRows = [
-    { label: "Subtotal", value: formatInr(cart.totals.itemSubtotal.amountMinor), helper: "Server cart before delivery and GST" },
-    { label: "Discount", value: formatInr(cart.totals.discountTotal.amountMinor), helper: "Applied by the commerce API" },
+    {
+      label: "Subtotal",
+      value: formatInr(cart.totals.itemSubtotal.amountMinor),
+      helper: "Server cart before delivery and GST"
+    },
+    {
+      label: "Discount",
+      value: formatInr(cart.totals.discountTotal.amountMinor),
+      helper: "Applied by the commerce API"
+    },
     { label: "Delivery", value: formatInr(cart.totals.shipping.amountMinor), helper: "PIN aware simulated delivery" },
-    { label: "Estimated GST", value: formatInr(cart.totals.estimatedTax.amountMinor), helper: "India INR checkout estimate" }
+    {
+      label: "Estimated GST",
+      value: formatInr(cart.totals.estimatedTax.amountMinor),
+      helper: "India INR checkout estimate"
+    }
   ] as const;
 
   return (
@@ -27,7 +39,8 @@ export default async function CheckoutPage() {
         <p className="eyebrow">Simulated checkout</p>
         <h1>Review delivery, mock payment, and totals before confirmation.</h1>
         <p className="max-w-2xl text-base leading-7 text-muted-foreground">
-          Checkout is a deterministic prototype flow. The API validates Indian address fields, creates a quote, and records simulated payment status without storing real card data.
+          Checkout is a deterministic prototype flow. The API validates Indian address fields, creates a quote, and
+          records simulated payment status without storing real card data.
         </p>
       </section>
 
@@ -36,7 +49,7 @@ export default async function CheckoutPage() {
           title="Add an item before checkout"
           description="Checkout needs at least one cart line so the server can create a quote and preserve order snapshots."
           action={
-            <Link className={buttonVariants()} href="/search">
+            <Link className={buttonVariants()} href="/">
               Browse products
             </Link>
           }
@@ -53,17 +66,20 @@ export default async function CheckoutPage() {
                 items={[
                   {
                     title: "Complete Indian delivery address",
-                    description: "Recipient name, address line 1, city, state, and a six digit PIN code are required before quote confirmation.",
+                    description:
+                      "Recipient name, address line 1, city, state, and a six digit PIN code are required before quote confirmation.",
                     state: "current"
                   },
                   {
                     title: "Mock payment outcome",
-                    description: "Use the mock success method for local confirmation. Mock failure states clearly say no real card was charged.",
+                    description:
+                      "Use the mock success method for local confirmation. Mock failure states clearly say no real card was charged.",
                     state: "pending"
                   },
                   {
                     title: "Server totals are final for the quote",
-                    description: "Subtotal, discounts, delivery, estimated GST, and grand total are calculated by the API, not the browser.",
+                    description:
+                      "Subtotal, discounts, delivery, estimated GST, and grand total are calculated by the API, not the browser.",
                     state: "pending"
                   }
                 ]}
@@ -123,7 +139,8 @@ export default async function CheckoutPage() {
               View confirmed orders
             </Link>
             <p className="mt-3 text-sm text-muted-foreground">
-              Confirmation happens through the checkout API. This page does not collect card numbers or claim real delivery.
+              Confirmation happens through the checkout API. This page does not collect card numbers or claim real
+              delivery.
             </p>
           </aside>
         </div>

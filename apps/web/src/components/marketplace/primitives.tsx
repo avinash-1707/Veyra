@@ -111,7 +111,10 @@ const stateToneClass: Record<StatePanelTone, string> = {
 
 export function StatePanel({ title, description, tone = "neutral", action, children }: StatePanelProps) {
   return (
-    <Card className={cn("max-w-2xl border shadow-[var(--shadow-card)]", stateToneClass[tone])} role={tone === "danger" ? "alert" : "status"}>
+    <Card
+      className={cn("max-w-2xl border shadow-[var(--shadow-card)]", stateToneClass[tone])}
+      role={tone === "danger" ? "alert" : "status"}
+    >
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
@@ -131,7 +134,10 @@ type GuidanceEvidencePanelProps = {
 
 export function GuidanceEvidencePanel({ title, summary, evidence, fallback }: GuidanceEvidencePanelProps) {
   return (
-    <aside className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]" aria-labelledby="guidance-panel-heading">
+    <aside
+      className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]"
+      aria-labelledby="guidance-panel-heading"
+    >
       <p className="eyebrow">Optional guidance</p>
       <h2 id="guidance-panel-heading" className="mt-2 text-2xl">
         {title}
@@ -194,11 +200,16 @@ export function TimelineList({ items }: TimelineListProps) {
   return (
     <ol className="grid gap-3">
       {items.map((item, index) => (
-        <li key={`${item.title}-${index}`} className="grid grid-cols-[auto_1fr] gap-3 rounded-xl border border-border bg-card p-4">
+        <li
+          key={`${item.title}-${index}`}
+          className="grid grid-cols-[auto_1fr] gap-3 rounded-xl border border-border bg-card p-4"
+        >
           <span
             className={cn(
               "mt-1 size-3 rounded-full border",
-              item.state === "complete" ? "border-[color:var(--foundation-success)] bg-[color:var(--foundation-success)]" : null,
+              item.state === "complete"
+                ? "border-[color:var(--foundation-success)] bg-[color:var(--foundation-success)]"
+                : null,
               item.state === "current" ? "border-primary bg-primary" : null,
               item.state === "pending" || item.state === undefined ? "border-border bg-secondary" : null
             )}
@@ -216,7 +227,7 @@ export function TimelineList({ items }: TimelineListProps) {
 }
 
 type SearchPrimitiveProps = {
-  action?: string;
+  action: string;
   id: string;
   name?: string;
   label: string;
@@ -226,7 +237,7 @@ type SearchPrimitiveProps = {
 };
 
 export function SearchPrimitive({
-  action = "/search",
+  action,
   id,
   name = "q",
   label,

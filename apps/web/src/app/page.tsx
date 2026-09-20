@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ProductCard, SearchPrimitive, SectionShell, StatePanel } from "@/components/marketplace";
+import { ProductCard, SectionShell, StatePanel } from "@/components/marketplace";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -17,35 +17,28 @@ export default async function Home() {
     <main className="page-shell">
       <section className="hero grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-end">
         <div>
-          <p className="eyebrow">India · simulated marketplace</p>
-          <h1>Shop with clear facts before guidance.</h1>
+          <p className="eyebrow">India marketplace</p>
+          <h1>Find products with the details that matter.</h1>
           <p className="max-w-2xl text-lg leading-7 text-muted-foreground">
-            Browse a conventional marketplace first, with price, rating, availability, and seller context kept visible
-            before any optional concierge help.
-          </p>
-          <div className="mt-6">
-            <SearchPrimitive
-              id="home-search"
-              label="Search products"
-              placeholder="Search bags, audio, kitchen, and more"
-            />
-          </div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Prefer guided discovery?{" "}
-            <Link className="font-semibold" href="/intelligent-search">
-              Try optional intelligent search
-            </Link>
-            , or keep using search and category browsing without it.
+            Search above for a product, brand, or category, then browse departments and featured products to compare
+            clear product details.
           </p>
         </div>
         <aside
           className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]"
           aria-label="Marketplace promise"
         >
-          <p className="eyebrow">Concierge boundary</p>
-          <h2 className="mt-2 text-2xl">Guidance never replaces checkout facts.</h2>
+          <p className="eyebrow">Guided Search</p>
+          <h2 className="mt-2 text-2xl">Find products around what matters to you.</h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Prices, availability, delivery estimates, returns, and payments stay on conventional server backed paths.
+            Describe your need, budget, and priorities in plain language to see relevant catalog matches with reasons
+            and tradeoffs.
+          </p>
+          <Link className="mt-4 inline-flex font-semibold" href="/intelligent-search">
+            Explore Guided Search
+          </Link>
+          <p className="mt-4 text-sm leading-6 text-muted-foreground">
+            Verify current product, price, delivery, and checkout details on the relevant product and checkout pages.
           </p>
         </aside>
       </section>
@@ -70,8 +63,8 @@ export default async function Home() {
         title="Featured products"
         description="Scan product essentials before opening a detail page."
         action={
-          <Link className={cn(buttonVariants({ variant: "outline", size: "sm" }))} href="/search">
-            View all products
+          <Link className={cn(buttonVariants({ variant: "outline", size: "sm" }))} href="/">
+            Browse departments
           </Link>
         }
       >
@@ -116,7 +109,7 @@ export function CatalogUnavailable() {
     <main className="page-shell">
       <StatePanel
         title="Catalog is temporarily unavailable"
-        description="Try again shortly. Search and browsing do not depend on optional guidance."
+        description="Try again shortly. Search and browsing will be available when the catalog returns."
         tone="danger"
         action={
           <Link className={cn(buttonVariants({ variant: "outline" }))} href="/">
