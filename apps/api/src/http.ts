@@ -52,13 +52,13 @@ function cookieValue(cookieHeader: string | undefined, name: string): string | u
     ?.slice(prefix.length);
 }
 
-function isMutationMethod(method: string): boolean {
-  return ["POST", "PUT", "PATCH", "DELETE"].includes(method);
+function isCookieAuthenticatedMutation(method: string, pathname: string): boolean {
+  return ["POST", "PUT", "PATCH", "DELETE"].includes(method) && pathname !== "/v1/delivery/estimate";
 }
 
 export function browserProtectionMiddleware(environment: AppEnvironment): MiddlewareHandler<AppBindings> {
   return async (context, next) => {
-    if (!isMutationMethod(context.req.method)) {
+    if (!isCookieAuthenticatedMutation(context.req.method, new URL(context.req.url).pathname)) {
       await next();
       return;
     }

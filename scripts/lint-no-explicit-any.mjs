@@ -2,7 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
 const root = process.cwd();
-const ignoredDirectoryNames = new Set([".git", "dist", "node_modules", "coverage"]);
+const ignoredDirectoryNames = new Set([".git", ".next", "dist", "node_modules", "coverage"]);
 const checkedExtensions = new Set([".ts", ".tsx"]);
 const explicitAnyPatterns = [
   /:\s*any\b/u,

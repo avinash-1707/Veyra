@@ -28,7 +28,7 @@ describe("Drizzle U0 schema", () => {
       "products_title_nonblank",
       "products_brand_nonblank",
       "products_status_published",
-      "products_currency_usd"
+      "products_currency_inr"
     ]));
     expect(getTableConfig(outboxEvents).checks.map((entry) => entry.name)).toEqual(expect.arrayContaining([
       "outbox_events_type_known",

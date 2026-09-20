@@ -1,0 +1,84 @@
+import type { Category, ProductOffer, ProductVariant } from "@veyra/contracts";
+
+type CatalogProduct = {
+  id: string;
+  slug: string;
+  title: string;
+  brand: string;
+  category: Category;
+  rating: number;
+  reviewCount: number;
+  image: { alt: string; url: string };
+  description: string;
+  specifications: Record<string, string>;
+  variants: ProductVariant[];
+  offers: ProductOffer[];
+};
+
+const bagsCategory: Category = { slug: "bags", name: "Bags" };
+const audioCategory: Category = { slug: "audio", name: "Audio" };
+const homeOfficeCategory: Category = { slug: "home-office", name: "Home office" };
+
+export const catalogCategories = [bagsCategory, audioCategory, homeOfficeCategory];
+
+export const catalogProducts: CatalogProduct[] = [
+  {
+    id: "018f3f7d-486c-7d73-9e13-83d8d0c75611",
+    slug: "veyra-everyday-backpack",
+    title: "Veyra Everyday Backpack",
+    brand: "Veyra Basics",
+    category: bagsCategory,
+    rating: 4.4,
+    reviewCount: 218,
+    image: { alt: "Charcoal Veyra Everyday Backpack", url: "/catalog/everyday-backpack.webp" },
+    description: "A structured daypack with a padded laptop sleeve and weather-resistant outer fabric.",
+    specifications: { Capacity: "22 L", "Laptop sleeve": "Fits up to 15 inch", Material: "Recycled polyester" },
+    variants: [
+      { id: "018f3f7d-486c-7d73-9e13-83d8d0c75612", name: "Charcoal", attributes: { Color: "Charcoal" } },
+      { id: "018f3f7d-486c-7d73-9e13-83d8d0c75613", name: "Sand", attributes: { Color: "Sand" } }
+    ],
+    offers: [
+      { id: "018f3f7d-486c-7d73-9e13-83d8d0c75614", variantId: "018f3f7d-486c-7d73-9e13-83d8d0c75612", sellerName: "Veyra Retail", price: { currency: "INR", amountMinor: 459900 }, condition: "new", availability: "available", expeditedEligible: true },
+      { id: "018f3f7d-486c-7d73-9e13-83d8d0c75615", variantId: "018f3f7d-486c-7d73-9e13-83d8d0c75613", sellerName: "Veyra Retail", price: { currency: "INR", amountMinor: 459900 }, condition: "new", availability: "available", expeditedEligible: true }
+    ]
+  },
+  {
+    id: "018f3f7d-5b68-7aef-9e10-2d890fc8a612",
+    slug: "veyra-noise-isolating-earbuds",
+    title: "Veyra Noise-Isolating Earbuds",
+    brand: "Veyra Audio",
+    category: audioCategory,
+    rating: 4.2,
+    reviewCount: 143,
+    image: { alt: "Veyra Noise-Isolating Earbuds in their charging case", url: "/catalog/earbuds.webp" },
+    description: "Wireless earbuds with passive noise isolation and a compact charging case.",
+    specifications: { Battery: "24 hours with case", Connectivity: "Bluetooth 5.3", "Water resistance": "IPX4" },
+    variants: [
+      { id: "018f3f7d-5b68-7aef-9e10-2d890fc8a613", name: "Midnight", attributes: { Color: "Midnight" } }
+    ],
+    offers: [
+      { id: "018f3f7d-5b68-7aef-9e10-2d890fc8a614", variantId: "018f3f7d-5b68-7aef-9e10-2d890fc8a613", sellerName: "Veyra Retail", price: { currency: "INR", amountMinor: 799900 }, condition: "new", availability: "available", expeditedEligible: false },
+      { id: "018f3f7d-5b68-7aef-9e10-2d890fc8a615", variantId: "018f3f7d-5b68-7aef-9e10-2d890fc8a613", sellerName: "Audio Outlet", price: { currency: "INR", amountMinor: 749900 }, condition: "open_box", availability: "withdrawn", expeditedEligible: false }
+    ]
+  },
+  {
+    id: "018f3f7d-6c72-7d73-9e13-83d8d0c75616",
+    slug: "veyra-ergonomic-desk-chair",
+    title: "Veyra Ergonomic Desk Chair",
+    brand: "Veyra Home",
+    category: homeOfficeCategory,
+    rating: 4.6,
+    reviewCount: 89,
+    image: { alt: "Veyra Ergonomic Desk Chair in graphite", url: "/catalog/desk-chair.webp" },
+    description: "An adjustable desk chair with lumbar support and breathable mesh back.",
+    specifications: { Material: "Mesh and fabric", "Seat height": "44–54 cm", Warranty: "2 years" },
+    variants: [
+      { id: "018f3f7d-6c72-7d73-9e13-83d8d0c75617", name: "Graphite", attributes: { Color: "Graphite" } }
+    ],
+    offers: [
+      { id: "018f3f7d-6c72-7d73-9e13-83d8d0c75618", variantId: "018f3f7d-6c72-7d73-9e13-83d8d0c75617", sellerName: "Veyra Home", price: { currency: "INR", amountMinor: 1299900 }, condition: "new", availability: "unavailable", expeditedEligible: false }
+    ]
+  }
+];
+
+export type { CatalogProduct };

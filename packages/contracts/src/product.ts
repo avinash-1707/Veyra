@@ -3,7 +3,7 @@ import { z } from "zod";
 import { apiSuccessSchema } from "./api.js";
 
 export const moneySchema = z.object({
-  currency: z.literal("USD"),
+  currency: z.literal("INR"),
   amountMinor: z.number().int().nonnegative()
 });
 

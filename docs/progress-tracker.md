@@ -9,7 +9,7 @@ This is the record of what actually happened, not a restatement of planned work.
 | Unit | Status | Last updated | Notes |
 |---|---|---|---|
 | U0 Foundations | Complete for local foundation | 2026-09-20 | Workspace, API/auth/browser protection, Drizzle schema, committed migration, provider adapters, observability, policy fixtures, outbox, worker harness, and verification commands are in place; production deployment gates remain |
-| U1 Baseline discovery | Not started | 2026-09-20 | Depends on U0 |
+| U1 Baseline discovery | Complete for local fixtures | 2026-09-20 | Next.js shopper surfaces, conventional discovery API, India/INR delivery fixture, and verification are in place; PostgreSQL-backed catalog reads remain a production integration follow-up. |
 | U2 Product evaluation and cart | Not started | 2026-09-20 | Depends on U1 |
 | U3 Checkout and order lifecycle | Not started | 2026-09-20 | Depends on U2 |
 | U4 Returns, reviews, support | Not started | 2026-09-20 | Depends on U3 |
@@ -21,7 +21,7 @@ This is the record of what actually happened, not a restatement of planned work.
 |---|---|---|
 | LLM provider enablement | OpenRouter selected for LLM access; initial candidate `google/gemini-2.5-flash-lite`, backup `openai/gpt-4.1-mini` or current equivalent; credentials, downstream model policy, provider terms, retention posture, and timeout behavior are not configured/approved | Resolve D-07 and remaining D-11 details before AI provider enablement |
 | Hosting and managed services | pnpm workspace, Hono API foundation, Better Auth config, Drizzle schema/migration, Nodemailer adapter, provider descriptors, and local scheduled worker harness are implemented; production region, runtime, job cadence, SLO, incident, OAuth callback, and deliverability details remain open | Resolve remaining D-02/D-03 production details before staging/deployment work |
-| Payment/shipping adapters | Simulated by design; US/USD tax/shipping/return/refund/reservation policy confirmed | Create D-04 policy fixtures before shopper pricing/checkout work |
+| Payment/shipping adapters | Simulated by design; India/INR GST, PIN-aware shipping/delivery, return/refund/reservation policy confirmed | Create D-04 policy fixtures before shopper pricing/checkout work |
 
 ## Decision resolutions at a glance
 
@@ -30,7 +30,7 @@ This is the record of what actually happened, not a restatement of planned work.
 | D-01 Baseline before AI | Confirmed | ADR-001 |
 | D-02 Deployment provider/topology | Partially resolved: pnpm, Vercel, Neon, Upstash, Qdrant Cloud, Vercel native background services selected; operations details open | ADR-004 |
 | D-03 API framework and auth/session choices | Sufficient for U0 local build: Hono, Better Auth config, session policy, CSRF/origin/CORS helpers, and Nodemailer adapter boundary implemented; production hardening remains | ADR-004 |
-| D-04 Commerce policy boundary | Confirmed: US/USD simulation policy | ADR-005 |
+| D-04 Commerce policy boundary | Confirmed: India/INR simulation policy with full Indian addresses | ADR-005 |
 | D-05–D-10 Pre-build security and operational controls | Sufficient for U0 local build; production hardening gates remain | ADR-008 |
 | D-11 AI provider operational enablement | Partially resolved: OpenRouter and candidate models selected; operational/model-policy details open | ADR-010 |
 
@@ -38,6 +38,8 @@ This is the record of what actually happened, not a restatement of planned work.
 
 | Date | Unit | Type | Matches spec? | Summary | Affected area | ADR / D-ID | Follow-up |
 |---|---|---|---|---|---|---|---|
+| 2026-09-20 | U1 | Progress | Yes | Implemented local-fixture baseline discovery: Next.js home, category, search, and product routes; deterministic lexical search, filters, sort, suggestions, variant/offer selection, availability, address-absent/degraded/empty states, and full Indian-address delivery estimates. Conventional browsing never calls AI. Added India/INR contracts and a forward-only currency-constraint migration. | Web, API, contracts, migrations | ADR-001 / ADR-005 / D-01 / D-04 | Replace the in-memory local catalog fixture with PostgreSQL catalog/offer repositories before staging; add browser-level end-to-end coverage once API deployment/runtime exists. |
+| 2026-09-20 | U1 | Decision resolution | No — owner-approved change | Replaced the initial US/USD D-04 simulation policy with India/INR: 18% estimated GST, full Indian address, standard delivery for valid PINs, and PIN-aware expedited eligibility. This supersedes the prior locale/currency fixture and requires a forward-only database constraint migration. | Commerce policy and discovery inputs | ADR-005 / D-04 | Implement normal and denied U1 delivery fixtures with simulation disclosure copy. |
 | 2026-09-20 | U0 | Progress | Yes | Audited the implemented PostgreSQL foundation and reorganized the Drizzle schema into identity, catalog, and platform outbox domains. Added U0-contract checks/defaults, session lifecycle indexes, UUID defaults, and `updated_at` triggers through a forward-only migration. No U1–U4 models or checkout behavior were introduced because those domains have not started and no production database query path exists yet. | Database schema and migrations | ADR-004 / ADR-006 / D-03 | Add domain-specific schema, transactional queries, and concurrency integration coverage only as U1–U4 work begins. |
 | 2026-09-20 | U0 | Progress | Yes | Completed U0 local foundation: Better Auth configuration and session constants, origin/CORS/CSRF helpers, central mutation protection, Drizzle schema, committed SQL migration, migration check command, provider adapter descriptors, Nodemailer transport boundary, and local scheduled outbox worker harness. | Auth, database, migrations, providers, worker | ADR-004 / ADR-006 / ADR-008 / D-02 / D-03 / D-05 | Begin U1 baseline discovery next; production deployment still requires provider-specific origins, credentials, regions, callbacks, deliverability, alerting, and restore evidence. |
 | 2026-09-20 | U0 | Decision resolution / progress | Yes | Resolved D-06–D-10 for local/prototype U0: route limits, body/deadline ceilings, AI timeout fallback, privacy retention baseline, default-deny operator roles, media quarantine policy, recovery targets, and audited dead-letter replay. Implemented policy fixtures, API body/rate-limit enforcement, production provider env validation, redacted audit/log helpers, and an in-memory outbox drain harness with tests. | Security, operations, observability, outbox | ADR-008 / D-06 / D-07 / D-08 / D-09 / D-10 | Production exposure still requires real provider origins, alert destinations, staffing, and tested provider restore paths. |

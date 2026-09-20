@@ -20,7 +20,7 @@ export const products = pgTable(
     check("products_title_nonblank", sql`btrim(${table.title}) <> ''`),
     check("products_brand_nonblank", sql`btrim(${table.brand}) <> ''`),
     check("products_status_published", sql`${table.status} = 'published'`),
-    check("products_currency_usd", sql`${table.currency} = 'USD'`),
+    check("products_currency_inr", sql`${table.currency} = 'INR'`),
     check("products_amount_minor_nonnegative", sql`${table.amountMinor} >= 0`),
     check("products_available_quantity_nonnegative", sql`${table.availableQuantity} >= 0`)
   ]

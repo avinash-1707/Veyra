@@ -18,7 +18,7 @@
 | Cache and ephemeral data | Upstash Redis | Caches, rate limits, short-lived session data, job coordination, and idempotency keys. It is never the sole record of a purchase or order. |
 | AI integration | Provider adapter with OpenRouter as the initial LLM access layer | Enables structured intent extraction and grounded summaries while preserving deterministic fallbacks and future model choice. Initial candidate model: `google/gemini-2.5-flash-lite`; backup candidate: `openai/gpt-4.1-mini` or current equivalent when stricter structured-output reliability is needed. Credentials, downstream model policy, provider terms, retention posture, and timeouts remain D-11 operational enablement work; spend caps are managed in OpenRouter. |
 | Async work | Database outbox + worker | Reliable event publishing without Kafka or a distributed event platform in the initial release. |
-| Payments and shipping | Simulated adapters | Enables an authentic checkout/order experience without handling regulated payment data or real carrier commitments. Initial commerce uses the confirmed D-04 US/USD simulation policy for tax, shipping, delivery, reservation, cancellation, returns/refunds, and P0 promotion fixtures. |
+| Payments and shipping | Simulated adapters | Enables an authentic checkout/order experience without handling regulated payment data or real carrier commitments. Initial commerce uses the confirmed D-04 India/INR simulation policy for GST, PIN-aware shipping/delivery, reservation, cancellation, returns/refunds, and P0 promotion fixtures. |
 
 ## 2. High-level topology
 

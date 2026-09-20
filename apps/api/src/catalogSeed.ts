@@ -7,7 +7,7 @@ export const catalogSeedProducts = [
     title: "Veyra Everyday Backpack",
     brand: "Veyra Basics",
     status: "published",
-    price: { currency: "USD", amountMinor: 4599 },
+    price: { currency: "INR", amountMinor: 459900 },
     availableQuantity: 12
   },
   {
@@ -16,7 +16,7 @@ export const catalogSeedProducts = [
     title: "Veyra Noise-Isolating Earbuds",
     brand: "Veyra Audio",
     status: "published",
-    price: { currency: "USD", amountMinor: 7999 },
+    price: { currency: "INR", amountMinor: 799900 },
     availableQuantity: 7
   }
 ] satisfies ProductSeed[];

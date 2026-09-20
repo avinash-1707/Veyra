@@ -5,6 +5,7 @@
     { "path": "packages/config" },
     { "path": "packages/db" },
     { "path": "apps/api" },
-    { "path": "apps/worker" }
+    { "path": "apps/worker" },
+    { "path": "apps/web" }
   ]
 }
