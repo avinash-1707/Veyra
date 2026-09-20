@@ -8,6 +8,7 @@
   },
   "types": "./dist/index.d.ts",
   "scripts": {
+    "dev": "pnpm build && node --env-file=../../.env --watch dist/dev.js",
     "build": "tsc -b",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
@@ -15,6 +16,7 @@
     "db:seed": "node --env-file=../../.env scripts/seed-large-catalog.mjs"
   },
   "dependencies": {
+    "@hono/node-server": "^2.1.1",
     "@neondatabase/serverless": "^1.1.0",
     "@veyra/config": "workspace:*",
     "@veyra/contracts": "workspace:*",
