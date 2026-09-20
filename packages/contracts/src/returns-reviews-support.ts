@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { apiSuccessSchema } from "./api.js";
+import { apiSuccessSchema, paginatedSchema } from "./api.js";
 import { checkoutQuoteLineSchema, orderHistoryEntrySchema } from "./checkout-order.js";
 
 export const returnReasonSchema = z.enum(["damaged", "wrong_item", "not_as_described", "changed_mind"]);
@@ -80,9 +80,9 @@ export const supportConfirmationSchema = z.object({ proposal: supportProposalSch
 
 export const returnEligibilityResponseSchema = apiSuccessSchema(returnEligibilitySchema);
 export const returnResponseSchema = apiSuccessSchema(returnRequestSchema);
-export const returnListResponseSchema = apiSuccessSchema(z.array(returnRequestSchema));
+export const returnListResponseSchema = apiSuccessSchema(paginatedSchema(returnRequestSchema));
 export const reviewResponseSchema = apiSuccessSchema(shopperReviewSchema);
-export const reviewListResponseSchema = apiSuccessSchema(z.array(shopperReviewSchema));
+export const reviewListResponseSchema = apiSuccessSchema(paginatedSchema(shopperReviewSchema));
 export const supportProposalResponseSchema = apiSuccessSchema(supportProposalSchema);
 export const supportConfirmationResponseSchema = apiSuccessSchema(supportConfirmationSchema);
 

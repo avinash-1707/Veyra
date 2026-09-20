@@ -1,5 +1,6 @@
 import { deliverySimulationDisclosure, type AddCartItemCommand, type Cart, type CartLine, type ProductFactsheet, type UpdateCartItemCommand } from "@veyra/contracts";
 
+import { getSqlClient } from "../../platform/database.js";
 import { getFactsheetByOffer } from "../discovery/discovery.js";
 
 const gstRatePercent = 18;
@@ -27,11 +28,30 @@ export function resetCartsForTests(): void {
   idempotencyRecords.clear();
 }
 
-export function readCart(cartId: string): Cart {
-  return toCart(getOrCreateCart(cartId));
+export async function readCart(cartId: string): Promise<Cart> {
+  const sql = getSqlClient();
+  if (sql === undefined) return toCart(getOrCreateCart(cartId));
+  await sql`INSERT INTO carts (id) VALUES (${cartId}) ON CONFLICT (id) DO NOTHING`;
+  const rows = await sql`SELECT offer_id, variant_id, quantity, location FROM cart_items WHERE cart_id = ${cartId} ORDER BY created_at`;
+  return toCart({ id: cartId, lines: rows.map(toStoredCartLine).filter((line): line is StoredCartLine => line !== undefined) });
 }
 
-export function addCartItem(cartId: string, command: AddCartItemCommand, idempotencyKey?: string): MutationResult {
+export async function addCartItem(cartId: string, command: AddCartItemCommand, idempotencyKey?: string): Promise<MutationResult> {
+  const sql = getSqlClient();
+  if (sql !== undefined) {
+    return runPersistentIdempotent(cartId, "cart:add", command, idempotencyKey, async () => {
+      const factsheet = getFactsheetByOffer(command.offerId, command.variantId);
+      if (factsheet === undefined) return { status: "not_found", message: "Offer and variant were not found." };
+      if (factsheet.selectedOffer.availability !== "available") return { status: "policy_conflict", message: "Choose an available offer before adding it to cart." };
+      await sql`INSERT INTO carts (id) VALUES (${cartId}) ON CONFLICT (id) DO NOTHING`;
+      await sql`INSERT INTO cart_items (cart_id, offer_id, variant_id, quantity, location)
+        VALUES (${cartId}, ${command.offerId}, ${command.variantId}, ${command.quantity}, 'cart')
+        ON CONFLICT (cart_id, offer_id, variant_id, location)
+        DO UPDATE SET quantity = LEAST(10, cart_items.quantity + EXCLUDED.quantity), updated_at = now()`;
+      return { status: "ok", cart: await readCart(cartId) };
+    });
+  }
+
   return runIdempotent(cartId, "add", command, idempotencyKey, () => {
     const factsheet = getFactsheetByOffer(command.offerId, command.variantId);
     if (factsheet === undefined) return { status: "not_found", message: "Offer and variant were not found." };
@@ -48,7 +68,18 @@ export function addCartItem(cartId: string, command: AddCartItemCommand, idempot
   });
 }
 
-export function updateCartItem(cartId: string, lineId: string, command: UpdateCartItemCommand, idempotencyKey?: string): MutationResult {
+export async function updateCartItem(cartId: string, lineId: string, command: UpdateCartItemCommand, idempotencyKey?: string): Promise<MutationResult> {
+  const sql = getSqlClient();
+  if (sql !== undefined) {
+    return runPersistentIdempotent(cartId, `cart:update:${lineId}`, command, idempotencyKey, async () => {
+      const parsed = parseLineId(lineId);
+      if (parsed === undefined) return { status: "not_found", message: "Cart item was not found." };
+      const updated = await sql`UPDATE cart_items SET quantity = ${command.quantity}, updated_at = now() WHERE cart_id = ${cartId} AND offer_id = ${parsed.offerId} AND variant_id = ${parsed.variantId} RETURNING id`;
+      if (updated.length === 0) return { status: "not_found", message: "Cart item was not found." };
+      return { status: "ok", cart: await readCart(cartId) };
+    });
+  }
+
   return runIdempotent(cartId, `update:${lineId}`, command, idempotencyKey, () => {
     const cart = getOrCreateCart(cartId);
     const line = findStoredLine(cart, lineId);
@@ -58,7 +89,18 @@ export function updateCartItem(cartId: string, lineId: string, command: UpdateCa
   });
 }
 
-export function moveCartItem(cartId: string, lineId: string, location: "cart" | "saved_for_later", idempotencyKey?: string): MutationResult {
+export async function moveCartItem(cartId: string, lineId: string, location: "cart" | "saved_for_later", idempotencyKey?: string): Promise<MutationResult> {
+  const sql = getSqlClient();
+  if (sql !== undefined) {
+    return runPersistentIdempotent(cartId, `cart:move:${lineId}:${location}`, { location }, idempotencyKey, async () => {
+      const parsed = parseLineId(lineId);
+      if (parsed === undefined) return { status: "not_found", message: "Cart item was not found." };
+      const updated = await sql`UPDATE cart_items SET location = ${location}, updated_at = now() WHERE cart_id = ${cartId} AND offer_id = ${parsed.offerId} AND variant_id = ${parsed.variantId} RETURNING id`;
+      if (updated.length === 0) return { status: "not_found", message: "Cart item was not found." };
+      return { status: "ok", cart: await readCart(cartId) };
+    });
+  }
+
   return runIdempotent(cartId, `move:${lineId}:${location}`, { location }, idempotencyKey, () => {
     const cart = getOrCreateCart(cartId);
     const line = findStoredLine(cart, lineId);
@@ -68,7 +110,18 @@ export function moveCartItem(cartId: string, lineId: string, location: "cart" | 
   });
 }
 
-export function removeCartItem(cartId: string, lineId: string, idempotencyKey?: string): MutationResult {
+export async function removeCartItem(cartId: string, lineId: string, idempotencyKey?: string): Promise<MutationResult> {
+  const sql = getSqlClient();
+  if (sql !== undefined) {
+    return runPersistentIdempotent(cartId, `cart:remove:${lineId}`, {}, idempotencyKey, async () => {
+      const parsed = parseLineId(lineId);
+      if (parsed === undefined) return { status: "not_found", message: "Cart item was not found." };
+      const deleted = await sql`DELETE FROM cart_items WHERE cart_id = ${cartId} AND offer_id = ${parsed.offerId} AND variant_id = ${parsed.variantId} RETURNING id`;
+      if (deleted.length === 0) return { status: "not_found", message: "Cart item was not found." };
+      return { status: "ok", cart: await readCart(cartId) };
+    });
+  }
+
   return runIdempotent(cartId, `remove:${lineId}`, {}, idempotencyKey, () => {
     const cart = getOrCreateCart(cartId);
     const originalLength = cart.lines.length;
@@ -76,6 +129,21 @@ export function removeCartItem(cartId: string, lineId: string, idempotencyKey?: 
     if (cart.lines.length === originalLength) return { status: "not_found", message: "Cart item was not found." };
     return { status: "ok", cart: toCart(cart) };
   });
+}
+
+async function runPersistentIdempotent(cartId: string, scope: string, command: unknown, idempotencyKey: string | undefined, execute: () => Promise<MutationResult>): Promise<MutationResult> {
+  const sql = getSqlClient();
+  if (sql === undefined || idempotencyKey === undefined || idempotencyKey.trim().length === 0) return execute();
+  const fingerprint = stableFingerprint(command);
+  const existing = await sql`SELECT request_fingerprint, response FROM idempotency_records WHERE scope = ${scope} AND actor_id = ${cartId} AND idempotency_key = ${idempotencyKey}`;
+  const record = existing[0];
+  if (isRecordObject(record)) {
+    if (record.request_fingerprint !== fingerprint) return { status: "conflict", message: "Idempotency key was reused with a different cart command." };
+    return mutationResultFromUnknown(record.response);
+  }
+  const result = await execute();
+  await sql`INSERT INTO idempotency_records (scope, actor_id, idempotency_key, request_fingerprint, status, response) VALUES (${scope}, ${cartId}, ${idempotencyKey}, ${fingerprint}, ${result.status}, ${JSON.stringify(result)}::jsonb)`;
+  return result;
 }
 
 function runIdempotent(cartId: string, operation: string, command: unknown, idempotencyKey: string | undefined, execute: () => MutationResult): MutationResult {
@@ -104,6 +172,30 @@ function sortForFingerprint(value: unknown): unknown {
     return Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, entry]) => [key, sortForFingerprint(entry)]));
   }
   return value;
+}
+
+function isRecordObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function mutationResultFromUnknown(value: unknown): MutationResult {
+  if (!isRecordObject(value) || typeof value.status !== "string") return { status: "conflict", message: "Stored idempotency result was invalid." };
+  if (value.status === "ok" && isRecordObject(value.cart)) return { status: "ok", cart: value.cart as Cart };
+  if ((value.status === "conflict" || value.status === "not_found" || value.status === "policy_conflict") && typeof value.message === "string") return { status: value.status, message: value.message };
+  return { status: "conflict", message: "Stored idempotency result was invalid." };
+}
+
+function toStoredCartLine(row: unknown): StoredCartLine | undefined {
+  if (!isRecordObject(row) || typeof row.offer_id !== "string" || typeof row.variant_id !== "string" || typeof row.location !== "string") return undefined;
+  const quantity = typeof row.quantity === "number" ? row.quantity : Number(row.quantity);
+  if (!Number.isInteger(quantity) || (row.location !== "cart" && row.location !== "saved_for_later")) return undefined;
+  return { offerId: row.offer_id, variantId: row.variant_id, quantity, location: row.location };
+}
+
+function parseLineId(lineId: string): { offerId: string; variantId: string } | undefined {
+  const [offerId, variantId, extra] = lineId.split(":");
+  if (offerId === undefined || variantId === undefined || extra !== undefined) return undefined;
+  return { offerId, variantId };
 }
 
 function getOrCreateCart(cartId: string): StoredCart {

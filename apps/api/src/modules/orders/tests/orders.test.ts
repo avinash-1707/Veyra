@@ -47,7 +47,7 @@ describe("checkout and order lifecycle API", () => {
     expect(confirmed.history.map((entry) => entry.status)).toContain("preparing");
     expect(confirmed.auditEvents[0]?.status).toBe("order.confirmed");
     expect(confirmed.outboxEventIds).toHaveLength(1);
-    expect(parsedOrders.data.map((order) => order.id)).toEqual([confirmed.id]);
+    expect(parsedOrders.data.items.map((order) => order.id)).toEqual([confirmed.id]);
   });
 
   it("recovers from competing checkout attempts for limited stock", async () => {
@@ -70,7 +70,7 @@ describe("checkout and order lifecycle API", () => {
   it("rejects expired quotes and mock payment failures without creating orders", async () => {
     await addCartItem(1, "cart-add");
     const expiredQuote = await createQuote("mock_success");
-    expireQuoteForTests(expiredQuote.id);
+    await expireQuoteForTests(expiredQuote.id);
     const expired = await app.request("/v1/checkout/confirm", {
       method: "POST",
       headers: { ...shopperHeaders(), "content-type": "application/json", "idempotency-key": "expired-confirm" },

@@ -10,9 +10,12 @@
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b --pretty false",
-    "test": "vitest run"
+    "test": "vitest run",
+    "migrations:apply": "node --env-file=../../.env scripts/apply-migrations.mjs",
+    "db:seed": "node --env-file=../../.env scripts/seed-large-catalog.mjs"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "@veyra/config": "workspace:*",
     "@veyra/contracts": "workspace:*",
     "better-auth": "^1.7.5",

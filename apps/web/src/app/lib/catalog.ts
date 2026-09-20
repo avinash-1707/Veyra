@@ -10,6 +10,7 @@ export type CatalogResult = {
 };
 
 type ApiEnvelope<Data> = { data: Data };
+type Paginated<Data> = { items: Data[]; pageInfo: { nextCursor: string | null; hasNextPage: boolean; limit: number } };
 
 const apiOrigin = process.env.VEYRA_API_ORIGIN ?? "http://localhost:8787";
 
@@ -102,7 +103,8 @@ export type Order = {
 };
 
 export async function getOrders() {
-  return apiGet<Order[]>("/v1/orders");
+  const page = await apiGet<Paginated<Order>>("/v1/orders");
+  return page.items;
 }
 
 export async function getOrder(orderId: string) {
@@ -121,7 +123,8 @@ export type ReturnRequest = {
 };
 
 export async function getOrderReturns(orderId: string) {
-  return apiGet<ReturnRequest[]>(`/v1/orders/${encodeURIComponent(orderId)}/returns`);
+  const page = await apiGet<Paginated<ReturnRequest>>(`/v1/orders/${encodeURIComponent(orderId)}/returns`);
+  return page.items;
 }
 
 export async function getReturnRequest(returnId: string) {

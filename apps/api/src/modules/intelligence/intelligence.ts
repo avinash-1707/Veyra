@@ -29,9 +29,9 @@ export function interpretIntent(query: string): Intent {
   return { schemaVersion: 1, originalQuery: query, filters, requiredAttributes: [], preferences: mentioned, uncertainty: mentioned.length === 0 ? ["No structured preferences were recognized; edit the conventional filters if needed."] : [], source: "deterministic_fallback" };
 }
 
-export function intelligentSearch(query: string): IntelligentSearch {
+export async function intelligentSearch(query: string): Promise<IntelligentSearch> {
   const intent = interpretIntent(query);
-  const search = searchProducts(query, intent.filters, "relevance");
+  const search = await searchProducts(query, intent.filters, "relevance");
   return { schemaVersion: 1, provider: { status: "disabled", fallback: "deterministic-baseline" }, intent, results: search.results.map(rankProduct), total: search.total };
 }
 

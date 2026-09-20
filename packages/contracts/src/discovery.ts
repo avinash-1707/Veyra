@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { apiSuccessSchema } from "./api.js";
+import { apiSuccessSchema, pageInfoSchema } from "./api.js";
 import { moneySchema } from "./product.js";
 
 export const deliverySimulationDisclosure = "Delivery dates, availability, and shipping charges are simulated estimates, not real-world commitments.";
@@ -103,7 +103,8 @@ export const searchResponseSchema = z.object({
   sort: searchSortSchema,
   filters: searchFiltersSchema,
   results: z.array(productSummarySchema),
-  total: z.number().int().nonnegative()
+  total: z.number().int().nonnegative(),
+  pageInfo: pageInfoSchema
 });
 
 export const suggestionSchema = z.object({ type: z.enum(["query", "category"]), value: z.string().min(1) });

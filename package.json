@@ -10,6 +10,8 @@
     "lint": "node scripts/lint-no-explicit-any.mjs",
     "test": "vitest run",
     "migrations:check": "node scripts/check-migrations.mjs",
+    "migrations:apply": "pnpm --filter @veyra/api migrations:apply",
+    "db:seed": "pnpm --filter @veyra/api db:seed",
     "verify": "pnpm typecheck && pnpm lint && pnpm migrations:check && pnpm test"
   },
   "engines": {

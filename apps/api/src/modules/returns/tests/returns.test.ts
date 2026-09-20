@@ -37,7 +37,7 @@ describe("returns, reviews, and deterministic support API", () => {
 
     expect(returnResponseSchema.parse(replayBody).data.id).toBe(request.id);
     for (const state of ["received", "approved", "refunded"]) {
-      const advanced = advanceReturnForTests(shopperId, request.id);
+      const advanced = await advanceReturnForTests(shopperId, request.id);
       expect(advanced.status).toBe("ok");
       if (advanced.status === "ok") expect(advanced.data.state).toBe(state);
     }
@@ -45,7 +45,7 @@ describe("returns, reviews, and deterministic support API", () => {
 
   it("denies expired return eligibility", async () => {
     const order = await deliveredOrder();
-    expireDeliveredOrderForTests(order.id);
+    await expireDeliveredOrderForTests(order.id);
     const response = await app.request(`/v1/orders/${order.id}/items/${order.items[0]!.cartLineId}/return-eligibility`, { headers: headers() });
     expect(JSON.stringify(await response.json())).toContain("30-day simulated return window has expired");
   });
@@ -73,7 +73,7 @@ describe("returns, reviews, and deterministic support API", () => {
     const proposalBody: unknown = await proposalResponse.json();
     const proposal = supportProposalResponseSchema.parse(proposalBody).data;
     const beforeConfirm = await app.request(`/v1/orders/${order.id}/returns`, { headers: headers() });
-    expect(JSON.stringify(await beforeConfirm.json())).toContain('"data":[]');
+    expect(JSON.stringify(await beforeConfirm.json())).toContain('"items":[]');
 
     const confirmed = await app.request(`/v1/support/proposals/${proposal.id}/confirm`, { method: "POST", headers: { ...headers(), "idempotency-key": "support-confirm" } });
     const confirmedBody: unknown = await confirmed.json();

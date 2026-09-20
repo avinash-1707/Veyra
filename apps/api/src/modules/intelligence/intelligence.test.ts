@@ -5,11 +5,11 @@ import { app } from "../../index.js";
 import { intelligentSearch, interpretIntent } from "./intelligence.js";
 
 describe("disabled intelligent shopping", () => {
-  it("extracts editable hard constraints and keeps deterministic evidence", () => {
+  it("extracts editable hard constraints and keeps deterministic evidence", async () => {
     const intent = interpretIntent("laptop under ₹1.2 lakh with good battery");
     expect(intent.filters).toEqual({ category: "laptops", maxPriceMinor: 12_000_000 });
     expect(intent.preferences).toEqual(["battery"]);
-    const result = intelligentSearch("laptop under ₹1.2 lakh with good battery");
+    const result = await intelligentSearch("laptop under ₹1.2 lakh with good battery");
     expect(result.provider).toEqual({ status: "disabled", fallback: "deterministic-baseline" });
     expect(result.results.every((entry) => entry.evidence.length > 0 && entry.product.selectedOffer.price.amountMinor <= 12_000_000)).toBe(true);
   });

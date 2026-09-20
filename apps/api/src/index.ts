@@ -42,6 +42,7 @@ import { comparisonGuidance, intelligentSearch, reviewGuidance } from "./modules
 import { advanceFulfillment, cancelOrder, confirmCheckout, createCheckoutQuote, editOrderDelivery, getOrder, listOrders } from "./modules/orders/orders.js";
 import { confirmSupportProposal, createReturn, createSupportProposal, getReturn, getReturnEligibility, listReturns, submitReview } from "./modules/returns/returns.js";
 import { browserProtectionMiddleware, fail, ok, policyMiddleware, requestIdMiddleware, securityHeadersMiddleware, type AppBindings } from "./platform/http.js";
+import { paginateByCursor, parsePagination } from "./platform/pagination.js";
 
 export const appEnvironment = parseAppEnvironment(process.env);
 
@@ -74,16 +75,16 @@ app.get("/v1/products/seed", (context) => {
   return context.json(response);
 });
 
-app.get("/v1/categories", (context) => {
+app.get("/v1/categories", async (context) => {
   const response = categoryListResponseSchema.parse({
     apiVersion: "v1",
     requestId: context.get("requestId"),
-    data: listCategories()
+    data: await listCategories()
   });
   return context.json(response);
 });
 
-app.get("/v1/search", (context) => {
+app.get("/v1/search", async (context) => {
   const query = context.req.query("q") ?? "";
   const filters = searchFiltersSchema.safeParse({
     category: context.req.query("category"),
@@ -102,7 +103,7 @@ app.get("/v1/search", (context) => {
   const response = searchListResponseSchema.parse({
     apiVersion: "v1",
     requestId: context.get("requestId"),
-    data: searchProducts(query, filters.data, sort.data)
+    data: await searchProducts(query, filters.data, sort.data, parsePagination({ cursor: context.req.query("cursor"), limit: context.req.query("limit") }))
   });
   return context.json(response);
 });
@@ -121,10 +122,10 @@ app.get("/v1/ai/products/:slug/reviews", (context) => {
   return context.json(response);
 });
 
-app.get("/v1/ai/search", (context) => {
+app.get("/v1/ai/search", async (context) => {
   const query = context.req.query("q") ?? "";
   if (query.trim().length === 0 || query.length > 200) return fail(context, 400, "validation_error", "Enter a shopping query of up to 200 characters.");
-  const response = intelligentSearchResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: intelligentSearch(query) });
+  const response = intelligentSearchResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: await intelligentSearch(query) });
   return context.json(response);
 });
 
@@ -186,11 +187,11 @@ app.get("/v1/products/:slug", (context) => {
   return context.json(response);
 });
 
-app.get("/v1/cart", (context) => {
+app.get("/v1/cart", async (context) => {
   const response = cartResponseSchema.parse({
     apiVersion: "v1",
     requestId: context.get("requestId"),
-    data: readCart(cartIdFromRequest(context.req.header("x-veyra-cart-id")))
+    data: await readCart(cartIdFromRequest(context.req.header("x-veyra-cart-id")))
   });
   return context.json(response);
 });
@@ -198,31 +199,31 @@ app.get("/v1/cart", (context) => {
 app.post("/v1/cart/items", async (context) => {
   const payload = addCartItemCommandSchema.safeParse(await context.req.json<unknown>());
   if (!payload.success) return fail(context, 400, "validation_error", "Choose a valid offer, variant, and quantity.");
-  return cartMutationResponse(context, addCartItem(cartIdFromRequest(context.req.header("x-veyra-cart-id")), payload.data, context.req.header("idempotency-key")));
+  return cartMutationResponse(context, await addCartItem(cartIdFromRequest(context.req.header("x-veyra-cart-id")), payload.data, context.req.header("idempotency-key")));
 });
 
 app.patch("/v1/cart/items/:lineId", async (context) => {
   const payload = updateCartItemCommandSchema.safeParse(await context.req.json<unknown>());
   if (!payload.success) return fail(context, 400, "validation_error", "Enter a supported cart quantity.");
-  return cartMutationResponse(context, updateCartItem(cartIdFromRequest(context.req.header("x-veyra-cart-id")), context.req.param("lineId"), payload.data, context.req.header("idempotency-key")));
+  return cartMutationResponse(context, await updateCartItem(cartIdFromRequest(context.req.header("x-veyra-cart-id")), context.req.param("lineId"), payload.data, context.req.header("idempotency-key")));
 });
 
-app.post("/v1/cart/items/:lineId/save-for-later", (context) => {
-  return cartMutationResponse(context, moveCartItem(cartIdFromRequest(context.req.header("x-veyra-cart-id")), context.req.param("lineId"), "saved_for_later", context.req.header("idempotency-key")));
+app.post("/v1/cart/items/:lineId/save-for-later", async (context) => {
+  return cartMutationResponse(context, await moveCartItem(cartIdFromRequest(context.req.header("x-veyra-cart-id")), context.req.param("lineId"), "saved_for_later", context.req.header("idempotency-key")));
 });
 
-app.post("/v1/cart/items/:lineId/restore", (context) => {
-  return cartMutationResponse(context, moveCartItem(cartIdFromRequest(context.req.header("x-veyra-cart-id")), context.req.param("lineId"), "cart", context.req.header("idempotency-key")));
+app.post("/v1/cart/items/:lineId/restore", async (context) => {
+  return cartMutationResponse(context, await moveCartItem(cartIdFromRequest(context.req.header("x-veyra-cart-id")), context.req.param("lineId"), "cart", context.req.header("idempotency-key")));
 });
 
-app.delete("/v1/cart/items/:lineId", (context) => {
-  return cartMutationResponse(context, removeCartItem(cartIdFromRequest(context.req.header("x-veyra-cart-id")), context.req.param("lineId"), context.req.header("idempotency-key")));
+app.delete("/v1/cart/items/:lineId", async (context) => {
+  return cartMutationResponse(context, await removeCartItem(cartIdFromRequest(context.req.header("x-veyra-cart-id")), context.req.param("lineId"), context.req.header("idempotency-key")));
 });
 
 app.post("/v1/checkout/quote", async (context) => {
   const payload = checkoutQuoteCommandSchema.safeParse(await context.req.json<unknown>());
   if (!payload.success) return fail(context, 400, "validation_error", "Enter a valid checkout address, delivery speed, and mock payment method.");
-  const result = createCheckoutQuote(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), payload.data);
+  const result = await createCheckoutQuote(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), payload.data);
   if (result.status !== "ok") return commandFailureResponse(context, result);
   const response = checkoutQuoteResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
   return context.json(response);
@@ -231,26 +232,27 @@ app.post("/v1/checkout/quote", async (context) => {
 app.post("/v1/checkout/confirm", async (context) => {
   const payload = checkoutConfirmCommandSchema.safeParse(await context.req.json<unknown>());
   if (!payload.success) return fail(context, 400, "validation_error", "Confirm an unexpired checkout quote.");
-  const result = confirmCheckout(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), payload.data, context.req.header("idempotency-key"), context.get("requestId"));
+  const result = await confirmCheckout(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), payload.data, context.req.header("idempotency-key"), context.get("requestId"));
   if (result.status !== "ok") return commandFailureResponse(context, result);
   const response = orderResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
   return context.json(response);
 });
 
-app.get("/v1/orders", (context) => {
-  const response = orderListResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: listOrders(shopperIdFromRequest(context.req.header("x-veyra-shopper-id"))) });
+app.get("/v1/orders", async (context) => {
+  const orders = await listOrders(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")));
+  const response = orderListResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: paginateByCursor(orders, parsePagination({ cursor: context.req.query("cursor"), limit: context.req.query("limit") }), (order) => order.id) });
   return context.json(response);
 });
 
-app.get("/v1/orders/:orderId", (context) => {
-  const result = getOrder(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId"));
+app.get("/v1/orders/:orderId", async (context) => {
+  const result = await getOrder(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId"));
   if (result.status !== "ok") return commandFailureResponse(context, result);
   const response = orderResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
   return context.json(response);
 });
 
-app.post("/v1/orders/:orderId/cancel", (context) => {
-  const result = cancelOrder(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId"), context.get("requestId"));
+app.post("/v1/orders/:orderId/cancel", async (context) => {
+  const result = await cancelOrder(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId"), context.get("requestId"));
   if (result.status !== "ok") return commandFailureResponse(context, result);
   const response = orderResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
   return context.json(response);
@@ -259,26 +261,27 @@ app.post("/v1/orders/:orderId/cancel", (context) => {
 app.patch("/v1/orders/:orderId/delivery", async (context) => {
   const payload = editOrderDeliveryCommandSchema.safeParse(await context.req.json<unknown>());
   if (!payload.success) return fail(context, 400, "validation_error", "Enter a complete delivery address and supported delivery speed.");
-  const result = editOrderDelivery(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId"), payload.data);
+  const result = await editOrderDelivery(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId"), payload.data);
   if (result.status !== "ok") return commandFailureResponse(context, result);
   const response = orderResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
   return context.json(response);
 });
 
-app.post("/v1/orders/:orderId/advance-fulfillment", (context) => {
-  const result = advanceFulfillment(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId"), context.get("requestId"));
+app.post("/v1/orders/:orderId/advance-fulfillment", async (context) => {
+  const result = await advanceFulfillment(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId"), context.get("requestId"));
   if (result.status !== "ok") return commandFailureResponse(context, result);
   const response = orderResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
   return context.json(response);
 });
 
-app.get("/v1/orders/:orderId/returns", (context) => {
-  const response = returnListResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: listReturns(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId")) });
+app.get("/v1/orders/:orderId/returns", async (context) => {
+  const returns = await listReturns(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId"));
+  const response = returnListResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: paginateByCursor(returns, parsePagination({ cursor: context.req.query("cursor"), limit: context.req.query("limit") }), (request) => request.id) });
   return context.json(response);
 });
 
-app.get("/v1/orders/:orderId/items/:lineId/return-eligibility", (context) => {
-  const result = getReturnEligibility(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId"), context.req.param("lineId"));
+app.get("/v1/orders/:orderId/items/:lineId/return-eligibility", async (context) => {
+  const result = await getReturnEligibility(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId"), context.req.param("lineId"));
   if (result.status !== "ok") return commandFailureResponse(context, result);
   const response = returnEligibilityResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
   return context.json(response);
@@ -287,14 +290,14 @@ app.get("/v1/orders/:orderId/items/:lineId/return-eligibility", (context) => {
 app.post("/v1/returns", async (context) => {
   const payload = createReturnCommandSchema.safeParse(await context.req.json<unknown>());
   if (!payload.success) return fail(context, 400, "validation_error", "Choose a valid delivered item and return reason.");
-  const result = createReturn(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), payload.data, context.req.header("idempotency-key"), context.get("requestId"));
+  const result = await createReturn(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), payload.data, context.req.header("idempotency-key"), context.get("requestId"));
   if (result.status !== "ok") return commandFailureResponse(context, result);
   const response = returnResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
   return context.json(response);
 });
 
-app.get("/v1/returns/:returnId", (context) => {
-  const result = getReturn(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("returnId"));
+app.get("/v1/returns/:returnId", async (context) => {
+  const result = await getReturn(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("returnId"));
   if (result.status !== "ok") return commandFailureResponse(context, result);
   const response = returnResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
   return context.json(response);
@@ -303,7 +306,7 @@ app.get("/v1/returns/:returnId", (context) => {
 app.post("/v1/reviews", async (context) => {
   const payload = reviewSubmissionSchema.safeParse(await context.req.json<unknown>());
   if (!payload.success) return fail(context, 400, "validation_error", "Enter a rating, title, and review within the supported limits.");
-  const result = submitReview(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), payload.data, context.req.header("idempotency-key"));
+  const result = await submitReview(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), payload.data, context.req.header("idempotency-key"));
   if (result.status !== "ok") return commandFailureResponse(context, result);
   const response = reviewResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
   return context.json(response);
@@ -312,14 +315,14 @@ app.post("/v1/reviews", async (context) => {
 app.post("/v1/support/proposals", async (context) => {
   const payload = supportProposalCommandSchema.safeParse(await context.req.json<unknown>());
   if (!payload.success) return fail(context, 400, "validation_error", "Enter a supported help action and its required context.");
-  const result = createSupportProposal(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), payload.data);
+  const result = await createSupportProposal(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), payload.data);
   if (result.status !== "ok") return commandFailureResponse(context, result);
   const response = supportProposalResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
   return context.json(response);
 });
 
-app.post("/v1/support/proposals/:proposalId/confirm", (context) => {
-  const result = confirmSupportProposal(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("proposalId"), context.req.header("idempotency-key"), context.get("requestId"));
+app.post("/v1/support/proposals/:proposalId/confirm", async (context) => {
+  const result = await confirmSupportProposal(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("proposalId"), context.req.header("idempotency-key"), context.get("requestId"));
   if (result.status !== "ok") return commandFailureResponse(context, result);
   const response = supportConfirmationResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
   return context.json(response);
@@ -352,7 +355,7 @@ function shopperIdFromRequest(value: string | undefined): string {
   return value === undefined || value.trim().length === 0 ? "local-shopper" : value.trim().slice(0, 120);
 }
 
-function cartMutationResponse(context: Parameters<typeof fail>[0], result: ReturnType<typeof addCartItem>) {
+function cartMutationResponse(context: Parameters<typeof fail>[0], result: Awaited<ReturnType<typeof addCartItem>>) {
   if (result.status === "ok") {
     const response = cartResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.cart });
     return context.json(response);

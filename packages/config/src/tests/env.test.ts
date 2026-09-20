@@ -13,6 +13,7 @@ describe("parseAppEnvironment", () => {
       VEYRA_APP_ORIGIN: "https://veyra.example",
       VEYRA_API_ORIGIN: "https://api.veyra.example",
       DATABASE_URL: "https://database.example",
+      DATABASE_URL_POOLED: "https://pooled-database.example",
       UPSTASH_REDIS_REST_URL: "https://redis.example",
       UPSTASH_REDIS_REST_TOKEN: "token",
       QDRANT_URL: "https://qdrant.example",

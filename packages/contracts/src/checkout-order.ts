@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { apiSuccessSchema } from "./api.js";
+import { apiSuccessSchema, paginatedSchema } from "./api.js";
 import { cartTotalsSchema } from "./evaluation-cart.js";
 import { deliverySpeedSchema, indianAddressSchema } from "./discovery.js";
 import { moneySchema } from "./product.js";
@@ -70,7 +70,7 @@ export const orderSchema = z.object({
 
 export const checkoutQuoteResponseSchema = apiSuccessSchema(checkoutQuoteSchema);
 export const orderResponseSchema = apiSuccessSchema(orderSchema);
-export const orderListResponseSchema = apiSuccessSchema(z.array(orderSchema));
+export const orderListResponseSchema = apiSuccessSchema(paginatedSchema(orderSchema));
 export const editOrderDeliveryCommandSchema = z.object({
   shippingAddress: indianAddressSchema,
   deliverySpeed: deliverySpeedSchema

@@ -1,4 +1,4 @@
-import { check, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { check, integer, jsonb, numeric, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 export const products = pgTable(
@@ -12,6 +12,13 @@ export const products = pgTable(
     currency: text("currency").notNull(),
     amountMinor: integer("amount_minor").notNull(),
     availableQuantity: integer("available_quantity").notNull(),
+    categoryId: uuid("category_id"),
+    description: text("description"),
+    imageUrl: text("image_url"),
+    imageAlt: text("image_alt"),
+    rating: numeric("rating", { precision: 3, scale: 2 }).notNull().default("0"),
+    reviewCount: integer("review_count").notNull().default(0),
+    specifications: jsonb("specifications").notNull().default({}),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
   },
@@ -22,6 +29,8 @@ export const products = pgTable(
     check("products_status_published", sql`${table.status} = 'published'`),
     check("products_currency_inr", sql`${table.currency} = 'INR'`),
     check("products_amount_minor_nonnegative", sql`${table.amountMinor} >= 0`),
-    check("products_available_quantity_nonnegative", sql`${table.availableQuantity} >= 0`)
+    check("products_available_quantity_nonnegative", sql`${table.availableQuantity} >= 0`),
+    check("products_rating_range", sql`${table.rating} >= 0 AND ${table.rating} <= 5`),
+    check("products_review_count_nonnegative", sql`${table.reviewCount} >= 0`)
   ]
 );
