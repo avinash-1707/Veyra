@@ -2,6 +2,7 @@ import { parseAppEnvironment } from "@veyra/config";
 import {
   addCartItemCommandSchema,
   cartResponseSchema,
+  comparisonGuidanceResponseSchema,
   categoryListResponseSchema,
   checkoutConfirmCommandSchema,
   checkoutQuoteCommandSchema,
@@ -18,6 +19,7 @@ import {
   returnEligibilityResponseSchema,
   returnListResponseSchema,
   returnResponseSchema,
+  reviewGuidanceResponseSchema,
   reviewResponseSchema,
   reviewSubmissionSchema,
   supportConfirmationResponseSchema,
@@ -36,7 +38,7 @@ import { Hono } from "hono";
 import { addCartItem, moveCartItem, readCart, removeCartItem, updateCartItem } from "./modules/cart/cart.js";
 import { catalogSeedProducts } from "./modules/catalog/catalogSeed.js";
 import { compareProducts, estimateDelivery, getEvaluation, getProduct, getProductByOffer, listCategories, searchProducts, searchSuggestions } from "./modules/discovery/discovery.js";
-import { intelligentSearch } from "./modules/intelligence/intelligence.js";
+import { comparisonGuidance, intelligentSearch, reviewGuidance } from "./modules/intelligence/intelligence.js";
 import { advanceFulfillment, cancelOrder, confirmCheckout, createCheckoutQuote, editOrderDelivery, getOrder, listOrders } from "./modules/orders/orders.js";
 import { confirmSupportProposal, createReturn, createSupportProposal, getReturn, getReturnEligibility, listReturns, submitReview } from "./modules/returns/returns.js";
 import { browserProtectionMiddleware, fail, ok, policyMiddleware, requestIdMiddleware, securityHeadersMiddleware, type AppBindings } from "./platform/http.js";
@@ -102,6 +104,20 @@ app.get("/v1/search", (context) => {
     requestId: context.get("requestId"),
     data: searchProducts(query, filters.data, sort.data)
   });
+  return context.json(response);
+});
+
+app.get("/v1/ai/comparison", (context) => {
+  const guidance = comparisonGuidance((context.req.query("products") ?? "").split(",").filter(Boolean));
+  if (guidance === undefined) return fail(context, 400, "validation_error", "Compare one to three valid products.");
+  const response = comparisonGuidanceResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: guidance });
+  return context.json(response);
+});
+
+app.get("/v1/ai/products/:slug/reviews", (context) => {
+  const guidance = reviewGuidance(context.req.param("slug"));
+  if (guidance === undefined) return fail(context, 404, "not_found", "Product was not found.");
+  const response = reviewGuidanceResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: guidance });
   return context.json(response);
 });
 

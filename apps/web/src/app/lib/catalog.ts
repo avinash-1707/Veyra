@@ -49,6 +49,14 @@ export async function getProduct(slug: string, search: URLSearchParams) {
   }>(`/v1/products/${encodeURIComponent(slug)}${query.length > 0 ? `?${query}` : ""}`);
 }
 
+export async function getComparisonGuidance(slugs: string[]) {
+  return apiGet<{ summary: string; uncertainties: string[] }>(`/v1/ai/comparison?products=${encodeURIComponent(slugs.join(","))}`);
+}
+
+export async function getReviewGuidance(slug: string) {
+  return apiGet<{ summary: string; uncertainties: string[]; reviewCount: number }>(`/v1/ai/products/${encodeURIComponent(slug)}/reviews`);
+}
+
 export async function getEvaluation(slug: string) {
   return apiGet<{
     product: Awaited<ReturnType<typeof getProduct>>;
