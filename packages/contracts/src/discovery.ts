@@ -3,7 +3,8 @@ import { z } from "zod";
 import { apiSuccessSchema, pageInfoSchema } from "./api.js";
 import { moneySchema } from "./product.js";
 
-export const deliverySimulationDisclosure = "Delivery dates, availability, and shipping charges are simulated estimates, not real-world commitments.";
+export const deliverySimulationDisclosure =
+  "Delivery dates, availability, and shipping charges are simulated estimates, not real-world commitments.";
 
 export const categorySchema = z.object({
   slug: z.string().regex(/^[a-z0-9-]+$/),
@@ -85,18 +86,31 @@ export const productDetailSchema = productSummarySchema.extend({
 });
 
 export const searchSortSchema = z.enum(["relevance", "price_asc", "price_desc", "rating_desc"]);
-export const searchFiltersSchema = z.object({
-  category: z.string().regex(/^[a-z0-9-]+$/).optional(),
-  brand: z.string().min(1).optional(),
-  minPriceMinor: z.number().int().nonnegative().optional(),
-  maxPriceMinor: z.number().int().nonnegative().optional(),
-  minRating: z.number().min(0).max(5).optional(),
-  availability: z.literal("available").optional()
-}).superRefine((value, context) => {
-  if (value.minPriceMinor !== undefined && value.maxPriceMinor !== undefined && value.minPriceMinor > value.maxPriceMinor) {
-    context.addIssue({ code: "custom", message: "minPriceMinor must not exceed maxPriceMinor", path: ["minPriceMinor"] });
-  }
-});
+export const searchFiltersSchema = z
+  .object({
+    category: z
+      .string()
+      .regex(/^[a-z0-9-]+$/)
+      .optional(),
+    brand: z.string().min(1).optional(),
+    minPriceMinor: z.number().int().nonnegative().optional(),
+    maxPriceMinor: z.number().int().nonnegative().optional(),
+    minRating: z.number().min(0).max(5).optional(),
+    availability: z.literal("available").optional()
+  })
+  .superRefine((value, context) => {
+    if (
+      value.minPriceMinor !== undefined &&
+      value.maxPriceMinor !== undefined &&
+      value.minPriceMinor > value.maxPriceMinor
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "minPriceMinor must not exceed maxPriceMinor",
+        path: ["minPriceMinor"]
+      });
+    }
+  });
 
 export const searchResponseSchema = z.object({
   query: z.string().max(200),

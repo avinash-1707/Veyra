@@ -9,11 +9,13 @@
     "build": "tsc -b",
     "typecheck": "tsc -b --pretty false",
     "lint": "node scripts/lint-no-explicit-any.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "vitest run",
     "migrations:check": "node scripts/check-migrations.mjs",
     "migrations:apply": "pnpm --filter @veyra/api migrations:apply",
     "db:seed": "pnpm --filter @veyra/api db:seed",
-    "verify": "pnpm typecheck && pnpm lint && pnpm migrations:check && pnpm test"
+    "verify": "pnpm format:check && pnpm typecheck && pnpm lint && pnpm migrations:check && pnpm test"
   },
   "engines": {
     "node": ">=24.0.0"
@@ -21,6 +23,7 @@
   "devDependencies": {
     "@types/node": "^26.6.2",
     "@types/nodemailer": "^8.0.2",
+    "prettier": "^3.9.8",
     "typescript": "^7.0.2",
     "vitest": "^5.0.1"
   }

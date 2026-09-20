@@ -13,11 +13,12 @@ export const sessionPolicy = {
 } as const;
 
 export type OriginCheckResult =
-  | { allowed: true; origin: string }
-  | { allowed: false; reason: "missing_origin" | "untrusted_origin" };
+  { allowed: true; origin: string } | { allowed: false; reason: "missing_origin" | "untrusted_origin" };
 
 export function trustedOrigins(environment: AppEnvironment): readonly string[] {
-  const configuredOrigins = [environment.VEYRA_APP_ORIGIN, environment.VEYRA_API_ORIGIN].filter((origin) => origin !== undefined);
+  const configuredOrigins = [environment.VEYRA_APP_ORIGIN, environment.VEYRA_API_ORIGIN].filter(
+    (origin) => origin !== undefined
+  );
 
   if (configuredOrigins.length > 0 || environment.NODE_ENV === "production") {
     return configuredOrigins;
@@ -61,14 +62,15 @@ export function createAuth(environment: AppEnvironment) {
     emailAndPassword: {
       enabled: true
     },
-    socialProviders: environment.GOOGLE_CLIENT_ID && environment.GOOGLE_CLIENT_SECRET
-      ? {
-          google: {
-            clientId: environment.GOOGLE_CLIENT_ID,
-            clientSecret: environment.GOOGLE_CLIENT_SECRET
+    socialProviders:
+      environment.GOOGLE_CLIENT_ID && environment.GOOGLE_CLIENT_SECRET
+        ? {
+            google: {
+              clientId: environment.GOOGLE_CLIENT_ID,
+              clientSecret: environment.GOOGLE_CLIENT_SECRET
+            }
           }
-        }
-      : {},
+        : {},
     session: {
       expiresIn: sessionPolicy.expiresInSeconds,
       updateAge: sessionPolicy.rollingRefreshSeconds

@@ -50,7 +50,9 @@ function redactLogValue(value: LogValue): LogValue {
   return value;
 }
 
-export function createAuditEvent(input: Omit<AuditEvent, "occurredAt" | "metadata"> & { metadata?: LogFields }): AuditEvent {
+export function createAuditEvent(
+  input: Omit<AuditEvent, "occurredAt" | "metadata"> & { metadata?: LogFields }
+): AuditEvent {
   return {
     ...input,
     occurredAt: new Date().toISOString(),

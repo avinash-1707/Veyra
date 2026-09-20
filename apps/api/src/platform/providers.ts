@@ -18,24 +18,39 @@ export function providerDescriptors(environment: AppEnvironment): readonly Provi
     },
     {
       name: "redis",
-      status: environment.UPSTASH_REDIS_REST_URL === undefined || environment.UPSTASH_REDIS_REST_TOKEN === undefined ? "not_configured" : "configured",
+      status:
+        environment.UPSTASH_REDIS_REST_URL === undefined || environment.UPSTASH_REDIS_REST_TOKEN === undefined
+          ? "not_configured"
+          : "configured",
       purpose: "ephemeral rate limits, idempotency, and cache coordination"
     },
     {
       name: "qdrant",
-      status: environment.QDRANT_URL === undefined || environment.QDRANT_API_KEY === undefined ? "not_configured" : "configured",
+      status:
+        environment.QDRANT_URL === undefined || environment.QDRANT_API_KEY === undefined
+          ? "not_configured"
+          : "configured",
       purpose: "rebuildable semantic retrieval indexes"
     },
     {
       name: "email",
-      status: environment.SMTP_HOST === undefined || environment.SMTP_USER === undefined || environment.SMTP_PASS === undefined ? "not_configured" : "configured",
+      status:
+        environment.SMTP_HOST === undefined ||
+        environment.SMTP_USER === undefined ||
+        environment.SMTP_PASS === undefined
+          ? "not_configured"
+          : "configured",
       purpose: "verification and password recovery messages"
     }
   ];
 }
 
 export function createEmailTransport(environment: AppEnvironment) {
-  if (environment.SMTP_HOST === undefined || environment.SMTP_USER === undefined || environment.SMTP_PASS === undefined) {
+  if (
+    environment.SMTP_HOST === undefined ||
+    environment.SMTP_USER === undefined ||
+    environment.SMTP_PASS === undefined
+  ) {
     return null;
   }
 

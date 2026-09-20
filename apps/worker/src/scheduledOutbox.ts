@@ -2,7 +2,10 @@ import type { OutboxEvent } from "@veyra/contracts";
 
 export type ScheduledOutboxStore = {
   pending(): readonly OutboxEvent[];
-  drain(consumer: (event: OutboxEvent) => Promise<void>, maxAttempts: number): Promise<{ processed: number; deadLettered: number }>;
+  drain(
+    consumer: (event: OutboxEvent) => Promise<void>,
+    maxAttempts: number
+  ): Promise<{ processed: number; deadLettered: number }>;
 };
 
 export type ScheduledOutboxResult = {

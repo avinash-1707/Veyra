@@ -6,7 +6,12 @@ export type CatalogResult = {
   rating: number;
   reviewCount: number;
   selectedVariant: { id: string; name: string };
-  selectedOffer: { id: string; sellerName: string; price: { amountMinor: number }; availability: "available" | "unavailable" | "withdrawn" };
+  selectedOffer: {
+    id: string;
+    sellerName: string;
+    price: { amountMinor: number };
+    availability: "available" | "unavailable" | "withdrawn";
+  };
 };
 
 type ApiEnvelope<Data> = { data: Data };
@@ -36,39 +41,63 @@ export async function getCategories() {
 
 export async function searchCatalog(search: URLSearchParams) {
   const query = search.toString();
-  return apiGet<{ query: string; results: CatalogResult[]; total: number }>(`/v1/search${query.length > 0 ? `?${query}` : ""}`);
+  return apiGet<{ query: string; results: CatalogResult[]; total: number }>(
+    `/v1/search${query.length > 0 ? `?${query}` : ""}`
+  );
 }
 
 export async function getProduct(slug: string, search: URLSearchParams) {
   const query = search.toString();
-  return apiGet<CatalogResult & {
-    description: string;
-    specifications: Record<string, string>;
-    variants: Array<{ id: string; name: string }>;
-    offers: Array<{ id: string; sellerName: string; price: { amountMinor: number }; availability: string }>;
-    delivery: { status: "address_required" | "available" | "unavailable"; disclosure: string };
-  }>(`/v1/products/${encodeURIComponent(slug)}${query.length > 0 ? `?${query}` : ""}`);
+  return apiGet<
+    CatalogResult & {
+      description: string;
+      specifications: Record<string, string>;
+      variants: Array<{ id: string; name: string }>;
+      offers: Array<{ id: string; sellerName: string; price: { amountMinor: number }; availability: string }>;
+      delivery: { status: "address_required" | "available" | "unavailable"; disclosure: string };
+    }
+  >(`/v1/products/${encodeURIComponent(slug)}${query.length > 0 ? `?${query}` : ""}`);
 }
 
 export async function getComparisonGuidance(slugs: string[]) {
-  return apiGet<{ summary: string; uncertainties: string[] }>(`/v1/ai/comparison?products=${encodeURIComponent(slugs.join(","))}`);
+  return apiGet<{ summary: string; uncertainties: string[] }>(
+    `/v1/ai/comparison?products=${encodeURIComponent(slugs.join(","))}`
+  );
 }
 
 export async function getReviewGuidance(slug: string) {
-  return apiGet<{ summary: string; uncertainties: string[]; reviewCount: number }>(`/v1/ai/products/${encodeURIComponent(slug)}/reviews`);
+  return apiGet<{ summary: string; uncertainties: string[]; reviewCount: number }>(
+    `/v1/ai/products/${encodeURIComponent(slug)}/reviews`
+  );
 }
 
 export async function getEvaluation(slug: string) {
   return apiGet<{
     product: Awaited<ReturnType<typeof getProduct>>;
-    reviews: Array<{ id: string; rating: number; title: string; body: string; authorDisplayName: string; verifiedPurchase: boolean }>;
+    reviews: Array<{
+      id: string;
+      rating: number;
+      title: string;
+      body: string;
+      authorDisplayName: string;
+      verifiedPurchase: boolean;
+    }>;
     questions: Array<{ id: string; question: string; answer: string | null }>;
     relatedProducts: Array<CatalogResult & { specifications: Record<string, string | null> }>;
   }>(`/v1/products/${encodeURIComponent(slug)}/evaluation`);
 }
 
 export async function intelligentSearch(query: string) {
-  return apiGet<{ intent: { originalQuery: string; filters: Record<string, string | number | undefined>; preferences: string[]; uncertainty: string[] }; provider: { status: "disabled"; fallback: "deterministic-baseline" }; results: Array<{ product: CatalogResult; reasons: string[]; tradeoff: string }> }>(`/v1/ai/search?q=${encodeURIComponent(query)}`);
+  return apiGet<{
+    intent: {
+      originalQuery: string;
+      filters: Record<string, string | number | undefined>;
+      preferences: string[];
+      uncertainty: string[];
+    };
+    provider: { status: "disabled"; fallback: "deterministic-baseline" };
+    results: Array<{ product: CatalogResult; reasons: string[]; tradeoff: string }>;
+  }>(`/v1/ai/search?q=${encodeURIComponent(query)}`);
 }
 
 export async function compareCatalog(slugs: string[]) {
@@ -80,9 +109,23 @@ export async function compareCatalog(slugs: string[]) {
 
 export type Cart = {
   id: string;
-  items: Array<{ id: string; product: CatalogResult; quantity: number; lineSubtotal: { amountMinor: number }; lineDiscount: { amountMinor: number }; availabilityStatus: string }>;
+  items: Array<{
+    id: string;
+    product: CatalogResult;
+    quantity: number;
+    lineSubtotal: { amountMinor: number };
+    lineDiscount: { amountMinor: number };
+    availabilityStatus: string;
+  }>;
   savedForLater: Array<{ id: string; product: CatalogResult; quantity: number }>;
-  totals: { itemSubtotal: { amountMinor: number }; discountTotal: { amountMinor: number }; shipping: { amountMinor: number }; estimatedTax: { amountMinor: number }; grandTotal: { amountMinor: number }; disclosure: string };
+  totals: {
+    itemSubtotal: { amountMinor: number };
+    discountTotal: { amountMinor: number };
+    shipping: { amountMinor: number };
+    estimatedTax: { amountMinor: number };
+    grandTotal: { amountMinor: number };
+    disclosure: string;
+  };
   itemCount: number;
 };
 
@@ -94,9 +137,23 @@ export type Order = {
   id: string;
   status: "confirmed" | "preparing" | "shipped" | "delivered" | "cancelled";
   paymentStatus: "authorized" | "failed" | "voided";
-  shippingAddress: { recipientName: string; line1: string; line2?: string; city: string; state: string; pinCode: string };
+  shippingAddress: {
+    recipientName: string;
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    pinCode: string;
+  };
   deliverySpeed: "standard" | "expedited";
-  items: Array<{ productTitle: string; variantName: string; sellerName: string; quantity: number; unitPrice: { amountMinor: number }; lineSubtotal: { amountMinor: number } }>;
+  items: Array<{
+    productTitle: string;
+    variantName: string;
+    sellerName: string;
+    quantity: number;
+    unitPrice: { amountMinor: number };
+    lineSubtotal: { amountMinor: number };
+  }>;
   totals: Cart["totals"];
   createdAt: string;
   history: Array<{ at: string; status: string; message: string }>;

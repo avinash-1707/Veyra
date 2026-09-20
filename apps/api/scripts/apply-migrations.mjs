@@ -61,6 +61,7 @@ function splitSqlStatements(input) {
   }
 
   const finalStatement = current.trim();
-  if (finalStatement.length > 0 && finalStatement !== "BEGIN" && finalStatement !== "COMMIT") statements.push(finalStatement);
+  if (finalStatement.length > 0 && finalStatement !== "BEGIN" && finalStatement !== "COMMIT")
+    statements.push(finalStatement);
   return statements;
 }

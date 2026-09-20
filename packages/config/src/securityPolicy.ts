@@ -1,11 +1,5 @@
 export type RouteLimitGroup =
-  | "publicRead"
-  | "authSensitive"
-  | "commerceMutation"
-  | "supportMutation"
-  | "reviewMutation"
-  | "upload"
-  | "ai";
+  "publicRead" | "authSensitive" | "commerceMutation" | "supportMutation" | "reviewMutation" | "upload" | "ai";
 
 export type LimiterFailureMode = "failClosed" | "localFallback";
 
@@ -136,10 +130,26 @@ export type DataClass = "public" | "account" | "commerce" | "behavior" | "secret
 
 export const dataRetentionPolicies = {
   public: { class: "public", defaultRetentionDays: null, summary: "Published catalog and help content." },
-  account: { class: "account", defaultRetentionDays: null, summary: "Profile and authentication data needed to run the account." },
-  commerce: { class: "commerce", defaultRetentionDays: null, summary: "Cart, order, return, refund, and audit records." },
-  behavior: { class: "behavior", defaultRetentionDays: 180, summary: "Pseudonymous browsing and search events used to improve discovery." },
-  secret: { class: "secret", defaultRetentionDays: null, summary: "Credentials and provider tokens that must never appear in logs or AI evidence." }
+  account: {
+    class: "account",
+    defaultRetentionDays: null,
+    summary: "Profile and authentication data needed to run the account."
+  },
+  commerce: {
+    class: "commerce",
+    defaultRetentionDays: null,
+    summary: "Cart, order, return, refund, and audit records."
+  },
+  behavior: {
+    class: "behavior",
+    defaultRetentionDays: 180,
+    summary: "Pseudonymous browsing and search events used to improve discovery."
+  },
+  secret: {
+    class: "secret",
+    defaultRetentionDays: null,
+    summary: "Credentials and provider tokens that must never appear in logs or AI evidence."
+  }
 } satisfies Record<DataClass, { class: DataClass; defaultRetentionDays: number | null; summary: string }>;
 
 export type OperatorRole =

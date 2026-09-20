@@ -23,7 +23,9 @@ describe("auth and browser protection", () => {
     expect(trustedOrigins(environment)).toEqual(["https://veyra.example", "https://api.veyra.example"]);
     expect(checkOrigin("https://veyra.example", environment).allowed).toBe(true);
     expect(checkOrigin("https://evil.example", environment)).toEqual({ allowed: false, reason: "untrusted_origin" });
-    expect(corsHeaders("https://veyra.example", environment).get("access-control-allow-origin")).toBe("https://veyra.example");
+    expect(corsHeaders("https://veyra.example", environment).get("access-control-allow-origin")).toBe(
+      "https://veyra.example"
+    );
   });
 
   it("rejects mutating requests without trusted origin and matching csrf token", async () => {

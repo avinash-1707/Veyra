@@ -1,4 +1,8 @@
-import { comparisonGuidanceResponseSchema, intelligentSearchResponseSchema, reviewGuidanceResponseSchema } from "@veyra/contracts";
+import {
+  comparisonGuidanceResponseSchema,
+  intelligentSearchResponseSchema,
+  reviewGuidanceResponseSchema
+} from "@veyra/contracts";
 import { describe, expect, it } from "vitest";
 
 import { app } from "../../index.js";
@@ -11,11 +15,17 @@ describe("disabled intelligent shopping", () => {
     expect(intent.preferences).toEqual(["battery"]);
     const result = await intelligentSearch("laptop under ₹1.2 lakh with good battery");
     expect(result.provider).toEqual({ status: "disabled", fallback: "deterministic-baseline" });
-    expect(result.results.every((entry) => entry.evidence.length > 0 && entry.product.selectedOffer.price.amountMinor <= 12_000_000)).toBe(true);
+    expect(
+      result.results.every(
+        (entry) => entry.evidence.length > 0 && entry.product.selectedOffer.price.amountMinor <= 12_000_000
+      )
+    ).toBe(true);
   });
 
   it("grounds comparison and review guidance in supplied facts and raw reviews", async () => {
-    const comparison = await app.request("/v1/ai/comparison?products=veyra-everyday-backpack,veyra-noise-isolating-earbuds");
+    const comparison = await app.request(
+      "/v1/ai/comparison?products=veyra-everyday-backpack,veyra-noise-isolating-earbuds"
+    );
     const comparisonBody: unknown = await comparison.json();
     const parsedComparison = comparisonGuidanceResponseSchema.parse(comparisonBody).data;
     const reviews = await app.request("/v1/ai/products/veyra-everyday-backpack/reviews");
@@ -33,6 +43,12 @@ describe("disabled intelligent shopping", () => {
     const parsed = intelligentSearchResponseSchema.parse(body);
     expect(response.status).toBe(200);
     expect(parsed.data.provider.status).toBe("disabled");
-    expect(parsed.data.results.every((entry) => entry.evidence.every((evidence) => evidence.id === entry.product.id || evidence.id === entry.product.selectedOffer.id))).toBe(true);
+    expect(
+      parsed.data.results.every((entry) =>
+        entry.evidence.every(
+          (evidence) => evidence.id === entry.product.id || evidence.id === entry.product.selectedOffer.id
+        )
+      )
+    ).toBe(true);
   });
 });

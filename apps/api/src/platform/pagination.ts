@@ -13,7 +13,10 @@ export function parsePagination(query: { cursor?: string | undefined; limit?: st
 }
 
 export function paginateByCursor<T>(items: T[], pagination: CursorPagination, cursorFor: (item: T) => string): Page<T> {
-  const startIndex = pagination.cursor === undefined ? 0 : Math.max(0, items.findIndex((item) => cursorFor(item) === pagination.cursor) + 1);
+  const startIndex =
+    pagination.cursor === undefined
+      ? 0
+      : Math.max(0, items.findIndex((item) => cursorFor(item) === pagination.cursor) + 1);
   const pageItems = items.slice(startIndex, startIndex + pagination.limit);
   const hasNextPage = startIndex + pagination.limit < items.length;
   const nextCursor = hasNextPage && pageItems.length > 0 ? cursorFor(pageItems[pageItems.length - 1]!) : null;

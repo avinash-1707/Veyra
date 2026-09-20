@@ -1,7 +1,12 @@
 import { z } from "zod";
 
 import { apiSuccessSchema } from "./api.js";
-import { deliverySimulationDisclosure, productDetailSchema, productOfferSchema, productVariantSchema } from "./discovery.js";
+import {
+  deliverySimulationDisclosure,
+  productDetailSchema,
+  productOfferSchema,
+  productVariantSchema
+} from "./discovery.js";
 import { moneySchema } from "./product.js";
 
 export const productFactsheetSchema = z.object({
@@ -17,10 +22,12 @@ export const productFactsheetSchema = z.object({
   specifications: z.record(z.string(), z.string().min(1).nullable())
 });
 
-export const compareResponseSchema = apiSuccessSchema(z.object({
-  products: z.array(productFactsheetSchema).min(1).max(3),
-  fieldOrder: z.array(z.string().min(1))
-}));
+export const compareResponseSchema = apiSuccessSchema(
+  z.object({
+    products: z.array(productFactsheetSchema).min(1).max(3),
+    fieldOrder: z.array(z.string().min(1))
+  })
+);
 
 export const productReviewSchema = z.object({
   id: z.string().uuid(),
@@ -41,12 +48,14 @@ export const productQuestionSchema = z.object({
   createdAt: z.string().datetime()
 });
 
-export const evaluationResponseSchema = apiSuccessSchema(z.object({
-  product: productDetailSchema,
-  reviews: z.array(productReviewSchema),
-  questions: z.array(productQuestionSchema),
-  relatedProducts: z.array(productFactsheetSchema)
-}));
+export const evaluationResponseSchema = apiSuccessSchema(
+  z.object({
+    product: productDetailSchema,
+    reviews: z.array(productReviewSchema),
+    questions: z.array(productQuestionSchema),
+    relatedProducts: z.array(productFactsheetSchema)
+  })
+);
 
 export const cartItemLocationSchema = z.enum(["cart", "saved_for_later"]);
 export const cartLineSchema = z.object({

@@ -96,10 +96,16 @@ describe("checkout and order lifecycle API", () => {
       headers: { ...shopperHeaders(), "content-type": "application/json" },
       body: JSON.stringify({ shippingAddress: { ...address, line1: "44 Updated Road" }, deliverySpeed: "expedited" })
     });
-    const shippedResponse = await app.request(`/v1/orders/${order.id}/advance-fulfillment`, { method: "POST", headers: shopperHeaders() });
+    const shippedResponse = await app.request(`/v1/orders/${order.id}/advance-fulfillment`, {
+      method: "POST",
+      headers: shopperHeaders()
+    });
     const shippedBody: unknown = await shippedResponse.json();
     const shipped = orderResponseSchema.parse(shippedBody).data;
-    const cancelAfterShip = await app.request(`/v1/orders/${order.id}/cancel`, { method: "POST", headers: shopperHeaders() });
+    const cancelAfterShip = await app.request(`/v1/orders/${order.id}/cancel`, {
+      method: "POST",
+      headers: shopperHeaders()
+    });
 
     expect(editResponse.status).toBe(200);
     const editedBody: unknown = await editResponse.json();
@@ -113,7 +119,9 @@ describe("checkout and order lifecycle API", () => {
     await addCartItem(1, "cart-add");
     const quote = await createQuote("mock_success");
     const order = await confirmQuote(quote.id, "confirm-owner");
-    const otherShopper = await app.request(`/v1/orders/${order.id}`, { headers: { "x-veyra-shopper-id": "other-shopper" } });
+    const otherShopper = await app.request(`/v1/orders/${order.id}`, {
+      headers: { "x-veyra-shopper-id": "other-shopper" }
+    });
 
     expect(otherShopper.status).toBe(404);
   });
@@ -122,7 +130,12 @@ describe("checkout and order lifecycle API", () => {
 async function addCartItem(quantity: number, idempotencyKey: string): Promise<void> {
   const response = await app.request("/v1/cart/items", {
     method: "POST",
-    headers: { ...shopperHeaders(), "x-veyra-cart-id": cartId, "content-type": "application/json", "idempotency-key": idempotencyKey },
+    headers: {
+      ...shopperHeaders(),
+      "x-veyra-cart-id": cartId,
+      "content-type": "application/json",
+      "idempotency-key": idempotencyKey
+    },
     body: JSON.stringify({ offerId: backpackOfferId, variantId: backpackVariantId, quantity })
   });
   expect(response.status).toBe(200);
@@ -153,8 +166,8 @@ async function confirmQuote(quoteId: string, idempotencyKey: string) {
 function shopperHeaders() {
   return {
     "x-veyra-shopper-id": shopperId,
-    "origin": "http://localhost:3000",
-    "cookie": "veyra_csrf=csrf-token",
+    origin: "http://localhost:3000",
+    cookie: "veyra_csrf=csrf-token",
     "x-csrf-token": "csrf-token"
   };
 }

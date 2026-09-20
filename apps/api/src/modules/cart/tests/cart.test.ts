@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { resetLocalRateLimitsForTests } from "../../../platform/http.js";
 import { app } from "../../../index.js";
-import { resetCartsForTests } from "../cart.js";
+import { resetCartsForTests, resetPersistentCartsForTests } from "../cart.js";
 
 const cartId = "unit-2-cart";
 const backpackOfferId = "018f3f7d-486c-7d73-9e13-83d8d0c75614";
@@ -12,9 +12,10 @@ const withdrawnOfferId = "018f3f7d-5b68-7aef-9e10-2d890fc8a615";
 const earbudsVariantId = "018f3f7d-5b68-7aef-9e10-2d890fc8a613";
 
 describe("evaluation and cart API", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     resetLocalRateLimitsForTests();
     resetCartsForTests();
+    await resetPersistentCartsForTests(cartId);
   });
 
   it("compares up to three normalized factsheets and keeps missing data explicit", async () => {
@@ -40,13 +41,21 @@ describe("evaluation and cart API", () => {
 
   it("adds same product different offers as offer and variant keyed cart lines", async () => {
     const first = await addBackpack("line-one", backpackOfferId, backpackVariantId, 1);
-    const second = await addBackpack("line-two", "018f3f7d-486c-7d73-9e13-83d8d0c75615", "018f3f7d-486c-7d73-9e13-83d8d0c75613", 1);
+    const second = await addBackpack(
+      "line-two",
+      "018f3f7d-486c-7d73-9e13-83d8d0c75615",
+      "018f3f7d-486c-7d73-9e13-83d8d0c75613",
+      1
+    );
     const secondBody: unknown = await second.json();
     const parsed = cartResponseSchema.parse(secondBody);
 
     expect(first.status).toBe(200);
     expect(second.status).toBe(200);
-    expect(parsed.data.items.map((item) => item.product.selectedOffer.id)).toEqual([backpackOfferId, "018f3f7d-486c-7d73-9e13-83d8d0c75615"]);
+    expect(parsed.data.items.map((item) => item.product.selectedOffer.id)).toEqual([
+      backpackOfferId,
+      "018f3f7d-486c-7d73-9e13-83d8d0c75615"
+    ]);
   });
 
   it("replays duplicate cart commands without adding quantity twice", async () => {
@@ -79,8 +88,14 @@ describe("evaluation and cart API", () => {
   it("saves and restores cart lines for later", async () => {
     await addBackpack("save", backpackOfferId, backpackVariantId, 1);
     const lineId = `${backpackOfferId}:${backpackVariantId}`;
-    const saved = await app.request(`/v1/cart/items/${encodeURIComponent(lineId)}/save-for-later`, { method: "POST", headers: mutationHeaders("save-line") });
-    const restored = await app.request(`/v1/cart/items/${encodeURIComponent(lineId)}/restore`, { method: "POST", headers: mutationHeaders("restore-line") });
+    const saved = await app.request(`/v1/cart/items/${encodeURIComponent(lineId)}/save-for-later`, {
+      method: "POST",
+      headers: mutationHeaders("save-line")
+    });
+    const restored = await app.request(`/v1/cart/items/${encodeURIComponent(lineId)}/restore`, {
+      method: "POST",
+      headers: mutationHeaders("restore-line")
+    });
     const body: unknown = await restored.json();
     const parsed = cartResponseSchema.parse(body);
 
@@ -103,8 +118,8 @@ function mutationHeaders(idempotencyKey: string) {
   return {
     "x-veyra-cart-id": cartId,
     "idempotency-key": idempotencyKey,
-    "origin": "http://localhost:3000",
-    "cookie": "veyra_csrf=csrf-token",
+    origin: "http://localhost:3000",
+    cookie: "veyra_csrf=csrf-token",
     "x-csrf-token": "csrf-token"
   };
 }

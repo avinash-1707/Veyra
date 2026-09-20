@@ -1,4 +1,11 @@
-import { checkoutQuoteResponseSchema, orderResponseSchema, returnResponseSchema, reviewResponseSchema, supportConfirmationResponseSchema, supportProposalResponseSchema } from "@veyra/contracts";
+import {
+  checkoutQuoteResponseSchema,
+  orderResponseSchema,
+  returnResponseSchema,
+  reviewResponseSchema,
+  supportConfirmationResponseSchema,
+  supportProposalResponseSchema
+} from "@veyra/contracts";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { app } from "../../../index.js";
@@ -11,7 +18,13 @@ const shopperId = "shopper-unit-4";
 const cartId = "unit-4-cart";
 const offerId = "018f3f7d-486c-7d73-9e13-83d8d0c75614";
 const variantId = "018f3f7d-486c-7d73-9e13-83d8d0c75612";
-const address = { recipientName: "Aarav Sharma", line1: "12 Example Road", city: "Bengaluru", state: "Karnataka", pinCode: "560001" };
+const address = {
+  recipientName: "Aarav Sharma",
+  line1: "12 Example Road",
+  city: "Bengaluru",
+  state: "Karnataka",
+  pinCode: "560001"
+};
 
 describe("returns, reviews, and deterministic support API", () => {
   beforeEach(() => {
@@ -24,15 +37,25 @@ describe("returns, reviews, and deterministic support API", () => {
   it("accepts one delivered-item return and advances its simulated refund timeline", async () => {
     const order = await deliveredOrder();
     const lineId = order.items[0]!.cartLineId;
-    const eligibility = await app.request(`/v1/orders/${order.id}/items/${lineId}/return-eligibility`, { headers: headers() });
+    const eligibility = await app.request(`/v1/orders/${order.id}/items/${lineId}/return-eligibility`, {
+      headers: headers()
+    });
     const eligibilityBody: unknown = await eligibility.json();
     expect(eligibility.status).toBe(200);
     expect(JSON.stringify(eligibilityBody)).toContain('"eligible":true');
 
-    const created = await app.request("/v1/returns", { method: "POST", headers: { ...headers(), "content-type": "application/json", "idempotency-key": "return-once" }, body: JSON.stringify({ orderId: order.id, lineId, reason: "damaged" }) });
+    const created = await app.request("/v1/returns", {
+      method: "POST",
+      headers: { ...headers(), "content-type": "application/json", "idempotency-key": "return-once" },
+      body: JSON.stringify({ orderId: order.id, lineId, reason: "damaged" })
+    });
     const createdBody: unknown = await created.json();
     const request = returnResponseSchema.parse(createdBody).data;
-    const replay = await app.request("/v1/returns", { method: "POST", headers: { ...headers(), "content-type": "application/json", "idempotency-key": "return-once" }, body: JSON.stringify({ orderId: order.id, lineId, reason: "damaged" }) });
+    const replay = await app.request("/v1/returns", {
+      method: "POST",
+      headers: { ...headers(), "content-type": "application/json", "idempotency-key": "return-once" },
+      body: JSON.stringify({ orderId: order.id, lineId, reason: "damaged" })
+    });
     const replayBody: unknown = await replay.json();
 
     expect(returnResponseSchema.parse(replayBody).data.id).toBe(request.id);
@@ -46,56 +69,117 @@ describe("returns, reviews, and deterministic support API", () => {
   it("denies expired return eligibility", async () => {
     const order = await deliveredOrder();
     await expireDeliveredOrderForTests(order.id);
-    const response = await app.request(`/v1/orders/${order.id}/items/${order.items[0]!.cartLineId}/return-eligibility`, { headers: headers() });
+    const response = await app.request(
+      `/v1/orders/${order.id}/items/${order.items[0]!.cartLineId}/return-eligibility`,
+      { headers: headers() }
+    );
     expect(JSON.stringify(await response.json())).toContain("30-day simulated return window has expired");
   });
 
   it("denies cross-shopper, duplicate, and pre-delivery post-purchase actions", async () => {
     const pending = await createOrder();
     const lineId = pending.items[0]!.cartLineId;
-    const review = await app.request("/v1/reviews", { method: "POST", headers: { ...headers(), "content-type": "application/json" }, body: JSON.stringify({ orderId: pending.id, lineId, rating: 5, title: "Great", body: "Works well." }) });
-    const crossShopper = await app.request(`/v1/orders/${pending.id}/items/${lineId}/return-eligibility`, { headers: { ...headers(), "x-veyra-shopper-id": "other-shopper" } });
+    const review = await app.request("/v1/reviews", {
+      method: "POST",
+      headers: { ...headers(), "content-type": "application/json" },
+      body: JSON.stringify({ orderId: pending.id, lineId, rating: 5, title: "Great", body: "Works well." })
+    });
+    const crossShopper = await app.request(`/v1/orders/${pending.id}/items/${lineId}/return-eligibility`, {
+      headers: { ...headers(), "x-veyra-shopper-id": "other-shopper" }
+    });
     expect(review.status).toBe(409);
     expect(crossShopper.status).toBe(404);
 
     const delivered = await deliver(pending.id);
-    const submitted = await app.request("/v1/reviews", { method: "POST", headers: { ...headers(), "content-type": "application/json", "idempotency-key": "review-once" }, body: JSON.stringify({ orderId: delivered.id, lineId, rating: 5, title: "Great", body: "Works well." }) });
+    const submitted = await app.request("/v1/reviews", {
+      method: "POST",
+      headers: { ...headers(), "content-type": "application/json", "idempotency-key": "review-once" },
+      body: JSON.stringify({ orderId: delivered.id, lineId, rating: 5, title: "Great", body: "Works well." })
+    });
     const submittedBody: unknown = await submitted.json();
     expect(reviewResponseSchema.parse(submittedBody).data.verifiedPurchase).toBe(true);
-    const duplicate = await app.request("/v1/reviews", { method: "POST", headers: { ...headers(), "content-type": "application/json" }, body: JSON.stringify({ orderId: delivered.id, lineId, rating: 4, title: "Again", body: "Second review." }) });
+    const duplicate = await app.request("/v1/reviews", {
+      method: "POST",
+      headers: { ...headers(), "content-type": "application/json" },
+      body: JSON.stringify({ orderId: delivered.id, lineId, rating: 4, title: "Again", body: "Second review." })
+    });
     expect(duplicate.status).toBe(409);
   });
 
   it("requires an explicit, replay-safe support confirmation for return actions", async () => {
     const order = await deliveredOrder();
     const lineId = order.items[0]!.cartLineId;
-    const proposalResponse = await app.request("/v1/support/proposals", { method: "POST", headers: { ...headers(), "content-type": "application/json" }, body: JSON.stringify({ orderId: order.id, action: "return", lineId, reason: "not_as_described" }) });
+    const proposalResponse = await app.request("/v1/support/proposals", {
+      method: "POST",
+      headers: { ...headers(), "content-type": "application/json" },
+      body: JSON.stringify({ orderId: order.id, action: "return", lineId, reason: "not_as_described" })
+    });
     const proposalBody: unknown = await proposalResponse.json();
     const proposal = supportProposalResponseSchema.parse(proposalBody).data;
     const beforeConfirm = await app.request(`/v1/orders/${order.id}/returns`, { headers: headers() });
     expect(JSON.stringify(await beforeConfirm.json())).toContain('"items":[]');
 
-    const confirmed = await app.request(`/v1/support/proposals/${proposal.id}/confirm`, { method: "POST", headers: { ...headers(), "idempotency-key": "support-confirm" } });
+    const confirmed = await app.request(`/v1/support/proposals/${proposal.id}/confirm`, {
+      method: "POST",
+      headers: { ...headers(), "idempotency-key": "support-confirm" }
+    });
     const confirmedBody: unknown = await confirmed.json();
-    const replay = await app.request(`/v1/support/proposals/${proposal.id}/confirm`, { method: "POST", headers: { ...headers(), "idempotency-key": "support-confirm" } });
+    const replay = await app.request(`/v1/support/proposals/${proposal.id}/confirm`, {
+      method: "POST",
+      headers: { ...headers(), "idempotency-key": "support-confirm" }
+    });
     const replayBody: unknown = await replay.json();
     expect(supportConfirmationResponseSchema.parse(confirmedBody).data.outcome).toContain("requested");
     expect(supportConfirmationResponseSchema.parse(replayBody).data.outcome).toContain("requested");
   });
 });
 
-async function deliveredOrder() { return deliver((await createOrder()).id); }
+async function deliveredOrder() {
+  return deliver((await createOrder()).id);
+}
 async function deliver(orderId: string) {
   await app.request(`/v1/orders/${orderId}/advance-fulfillment`, { method: "POST", headers: headers() });
-  const response = await app.request(`/v1/orders/${orderId}/advance-fulfillment`, { method: "POST", headers: headers() });
-  return orderResponseSchema.parse(await response.json() as unknown).data;
+  const response = await app.request(`/v1/orders/${orderId}/advance-fulfillment`, {
+    method: "POST",
+    headers: headers()
+  });
+  return orderResponseSchema.parse((await response.json()) as unknown).data;
 }
 async function createOrder() {
-  const added = await app.request("/v1/cart/items", { method: "POST", headers: { ...headers(), "x-veyra-cart-id": cartId, "content-type": "application/json", "idempotency-key": crypto.randomUUID() }, body: JSON.stringify({ offerId, variantId, quantity: 1 }) });
+  const added = await app.request("/v1/cart/items", {
+    method: "POST",
+    headers: {
+      ...headers(),
+      "x-veyra-cart-id": cartId,
+      "content-type": "application/json",
+      "idempotency-key": crypto.randomUUID()
+    },
+    body: JSON.stringify({ offerId, variantId, quantity: 1 })
+  });
   expect(added.status).toBe(200);
-  const quoteResponse = await app.request("/v1/checkout/quote", { method: "POST", headers: { ...headers(), "content-type": "application/json" }, body: JSON.stringify({ cartId, shippingAddress: address, deliverySpeed: "standard", mockPaymentMethod: "mock_success" }) });
-  const quote = checkoutQuoteResponseSchema.parse(await quoteResponse.json() as unknown).data;
-  const confirmed = await app.request("/v1/checkout/confirm", { method: "POST", headers: { ...headers(), "content-type": "application/json", "idempotency-key": crypto.randomUUID() }, body: JSON.stringify({ quoteId: quote.id, mockPaymentMethod: "mock_success" }) });
-  return orderResponseSchema.parse(await confirmed.json() as unknown).data;
+  const quoteResponse = await app.request("/v1/checkout/quote", {
+    method: "POST",
+    headers: { ...headers(), "content-type": "application/json" },
+    body: JSON.stringify({
+      cartId,
+      shippingAddress: address,
+      deliverySpeed: "standard",
+      mockPaymentMethod: "mock_success"
+    })
+  });
+  const quote = checkoutQuoteResponseSchema.parse((await quoteResponse.json()) as unknown).data;
+  const confirmed = await app.request("/v1/checkout/confirm", {
+    method: "POST",
+    headers: { ...headers(), "content-type": "application/json", "idempotency-key": crypto.randomUUID() },
+    body: JSON.stringify({ quoteId: quote.id, mockPaymentMethod: "mock_success" })
+  });
+  return orderResponseSchema.parse((await confirmed.json()) as unknown).data;
 }
-function headers() { return { "x-veyra-shopper-id": shopperId, origin: "http://localhost:3000", cookie: "veyra_csrf=csrf-token", "x-csrf-token": "csrf-token" }; }
+function headers() {
+  return {
+    "x-veyra-shopper-id": shopperId,
+    origin: "http://localhost:3000",
+    cookie: "veyra_csrf=csrf-token",
+    "x-csrf-token": "csrf-token"
+  };
+}

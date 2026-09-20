@@ -14,7 +14,11 @@ export const intentSchema = z.object({
   uncertainty: z.array(z.string().min(1)).max(8),
   source: z.literal("deterministic_fallback")
 });
-export const evidenceSchema = z.object({ id: z.string().uuid(), type: z.enum(["product", "offer", "review"]), field: z.string().min(1) });
+export const evidenceSchema = z.object({
+  id: z.string().uuid(),
+  type: z.enum(["product", "offer", "review"]),
+  field: z.string().min(1)
+});
 export const rankedProductSchema = z.object({
   product: productSummarySchema,
   reasons: z.array(z.string().min(1)).min(1).max(3),

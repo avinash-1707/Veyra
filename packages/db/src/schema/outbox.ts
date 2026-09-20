@@ -18,7 +18,10 @@ export const outboxEvents = pgTable(
     processedAt: timestamp("processed_at", { withTimezone: true })
   },
   (table) => [
-    check("outbox_events_type_known", sql`${table.type} IN ('catalog.product_published', 'offer.changed', 'order.confirmed', 'shipment.status_changed', 'order.delivered', 'return.requested', 'return.refunded', 'review.published')`),
+    check(
+      "outbox_events_type_known",
+      sql`${table.type} IN ('catalog.product_published', 'offer.changed', 'order.confirmed', 'shipment.status_changed', 'order.delivered', 'return.requested', 'return.refunded', 'review.published')`
+    ),
     check("outbox_events_aggregate_type_nonblank", sql`btrim(${table.aggregateType}) <> ''`),
     check("outbox_events_aggregate_id_nonblank", sql`btrim(${table.aggregateId}) <> ''`),
     check("outbox_events_schema_version_positive", sql`${table.schemaVersion} > 0`),

@@ -23,17 +23,21 @@ describe("Drizzle U0 schema", () => {
   });
 
   it("guards product and outbox values that are fixed by the U0 contracts", () => {
-    expect(getTableConfig(products).checks.map((entry) => entry.name)).toEqual(expect.arrayContaining([
-      "products_slug_nonblank",
-      "products_title_nonblank",
-      "products_brand_nonblank",
-      "products_status_published",
-      "products_currency_inr"
-    ]));
-    expect(getTableConfig(outboxEvents).checks.map((entry) => entry.name)).toEqual(expect.arrayContaining([
-      "outbox_events_type_known",
-      "outbox_events_state_known",
-      "outbox_events_schema_version_positive"
-    ]));
+    expect(getTableConfig(products).checks.map((entry) => entry.name)).toEqual(
+      expect.arrayContaining([
+        "products_slug_nonblank",
+        "products_title_nonblank",
+        "products_brand_nonblank",
+        "products_status_published",
+        "products_currency_inr"
+      ])
+    );
+    expect(getTableConfig(outboxEvents).checks.map((entry) => entry.name)).toEqual(
+      expect.arrayContaining([
+        "outbox_events_type_known",
+        "outbox_events_state_known",
+        "outbox_events_schema_version_positive"
+      ])
+    );
   });
 });

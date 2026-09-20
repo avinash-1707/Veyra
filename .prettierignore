@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.next/
+*.tsbuildinfo
+coverage/
+.agent-logs/
+.pi-memory/
+*.md
+AGENTS.md
+CLAUDE.md

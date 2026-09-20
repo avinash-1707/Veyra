@@ -91,9 +91,10 @@ export const policyMiddleware: MiddlewareHandler<AppBindings> = async (context, 
   const bucketKey = `${policy.group}:${clientKey}`;
   const now = Date.now();
   const currentBucket = localLimitBuckets.get(bucketKey);
-  const bucket = currentBucket && currentBucket.resetAtMs > now
-    ? currentBucket
-    : { count: 0, resetAtMs: now + policy.windowSeconds * 1_000 };
+  const bucket =
+    currentBucket && currentBucket.resetAtMs > now
+      ? currentBucket
+      : { count: 0, resetAtMs: now + policy.windowSeconds * 1_000 };
 
   bucket.count += 1;
   localLimitBuckets.set(bucketKey, bucket);
@@ -121,7 +122,12 @@ export function ok<Data>(context: AppContext, data: Data) {
   });
 }
 
-export function fail(context: AppContext, status: 400 | 403 | 404 | 409 | 413 | 429 | 500, code: ApiErrorCode, message: string) {
+export function fail(
+  context: AppContext,
+  status: 400 | 403 | 404 | 409 | 413 | 429 | 500,
+  code: ApiErrorCode,
+  message: string
+) {
   return context.json(
     {
       apiVersion: "v1",
