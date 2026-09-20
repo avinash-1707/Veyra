@@ -53,7 +53,7 @@ U4 --> U5
 | D-08 | Default-deny internal roles and audit policy adopted for catalog, moderation, support, dead-letter replay, migration, and audit-log access | 00 / 02 / ADR-008 | U0 | Sufficient for U0 local build | Before operational capabilities are exposed |
 | D-09 | Media quarantine, allowlisted MIME/magic validation, scan/moderation status, metadata stripping, size ceiling, and signed URL isolation policy adopted | 00 / 02 / ADR-008 | U0 | Sufficient for U0 local build | Before media uploads are exposed |
 | D-10 | Local/prototype backup/restore, 24-hour RPO, 4-hour RTO target, quarterly restore test, authorized dead-letter replay, and pre-launch alert/on-call gates adopted | 00 / 02 / ADR-008 | U0 | Sufficient for U0 local build | Before production launch |
-| D-11 | OpenRouter selected for LLM access; initial candidate `google/gemini-2.5-flash-lite`, backup `openai/gpt-4.1-mini` or current equivalent; credentials, model allowlist/routing, terms, retention posture, timeouts, fallback, and evaluation thresholds remain open | 00 / 02 / ADR-010 | U5 | Partially resolved | Before AI provider enablement |
+| D-11 | OpenRouter selected; configurable allowlist is `google/gemini-2.5-flash-lite` with `openai/gpt-4.1-mini` backup; calls default disabled, use a 5-second deadline/no retry, 3-failure/30-second circuit breaker, deterministic fallback, kill switch, and fixed evaluation gates; credentials and provider/downstream retention/training terms remain open | 00 / 02 / ADR-010 | U5 | Sufficient for disabled local U5 | Before AI provider enablement |
 
 When a D-ID resolves, update this row, its ADR, the original `[Assumption]`, and the progress log together.
 
@@ -101,7 +101,7 @@ D-04 is confirmed, but each corresponding flow still needs policy fixtures befor
 ### U5 — Intelligent shopping
 **Work packages:** taxonomy/schema versions; indexing pipeline; retrieval/ranker fixtures; intent parsing; evidence bundles; template-first explanations; comparison/review evaluation; support-tool allowlist; provider fallback; AI telemetry.
 **Exit evidence:** fixed evaluations measure valid-schema rate, hard-constraint accuracy, evidence coverage, unsupported-claim rate, latency, and fallback behavior. A baseline path never depends on an AI response.
-**Blocked by:** remaining D-11 details for OpenRouter credentials, downstream model policy, provider terms, timeout/circuit-breaker behavior, fallback behavior, and versioned U5 configuration choices. Spend caps are managed in OpenRouter.
+**Blocked by:** OpenRouter credentials and approved provider/downstream model retention/training terms before any provider call; disabled local U5 may use the approved versioned configuration, timeout/circuit-breaker, evaluation, fallback, and kill-switch fixtures. Spend caps are managed in OpenRouter.
 
 ## Cross-unit controls
 Every unit produces source contracts, policy-branch fixtures, happy-path and failure-path evidence, observability additions, accessibility coverage for new shopper surfaces, and a progress-tracker entry. Rollback disables the introduced capability without losing committed commerce records and retains enough audit/log information to safely replay asynchronous work. Database migrations require forward-compatible sequencing and a tested restore/rollback procedure before production.

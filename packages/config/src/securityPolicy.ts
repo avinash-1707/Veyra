@@ -116,7 +116,7 @@ export const routeLimitPolicies = {
     windowSeconds: 60,
     maxRequests: 20,
     bodyBytes: 32_768,
-    deadlineMs: 3_000,
+    deadlineMs: 5_000,
     limiterFailureMode: "failClosed"
   }
 } satisfies Record<RouteLimitGroup, RouteLimitPolicy>;
@@ -127,7 +127,7 @@ export const paginationPolicy = {
 } as const;
 
 export const aiTimeoutPolicy = {
-  requestTimeoutMs: 2_500,
+  requestTimeoutMs: 5_000,
   fallback: "deterministic-baseline",
   fallbackCopy: "Use the conventional shopping flow when AI cannot answer quickly."
 } as const;

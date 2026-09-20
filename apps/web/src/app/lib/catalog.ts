@@ -58,6 +58,10 @@ export async function getEvaluation(slug: string) {
   }>(`/v1/products/${encodeURIComponent(slug)}/evaluation`);
 }
 
+export async function intelligentSearch(query: string) {
+  return apiGet<{ intent: { originalQuery: string; filters: Record<string, string | number | undefined>; preferences: string[]; uncertainty: string[] }; provider: { status: "disabled"; fallback: "deterministic-baseline" }; results: Array<{ product: CatalogResult; reasons: string[]; tradeoff: string }> }>(`/v1/ai/search?q=${encodeURIComponent(query)}`);
+}
+
 export async function compareCatalog(slugs: string[]) {
   return apiGet<{
     products: Array<CatalogResult & { specifications: Record<string, string | null> }>;

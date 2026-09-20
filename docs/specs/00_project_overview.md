@@ -50,7 +50,7 @@ Catalog quality, delivery-rule realism, provider availability, retrieval quality
 - **[Assumption] D-08:** internal operator roles and privileged-access controls must be selected before catalog/moderation/operations tooling exists.
 - **[Assumption] D-09:** media-upload validation, quarantine, scanning, and publication policy must be selected before uploads are enabled.
 - **[Assumption] D-10:** backup/restore, RPO/RTO, monitoring, and incident ownership must be selected before production launch.
-- **[Assumption] D-11:** OpenRouter is selected for LLM access with `google/gemini-2.5-flash-lite` as the initial candidate and `openai/gpt-4.1-mini` or current equivalent as backup, but credentials, downstream model policy, provider/model terms, retention posture, timeout behavior, fallback behavior, and evaluation thresholds must be approved before provider-backed AI is enabled. Spend caps are managed in OpenRouter.
+- **D-11:** Disabled local U5 uses a configurable allowlist of `google/gemini-2.5-flash-lite` and `openai/gpt-4.1-mini`, a 5-second no-retry deadline, a 3-failure/30-second circuit breaker, deterministic fallback, kill switch, and fixed evaluation gates. Credentials and provider/downstream-model retention/training terms remain required before provider-backed AI is enabled. Spend caps are managed in OpenRouter.
 
 ## Product boundary and operating model
 Veyra is a consumer shopping surface over a curated, simulated marketplace. It presents seller offers and fulfillment data to shoppers, but does not expose seller, warehouse, payment-processor, or carrier operational tools. "Marketplace" describes the consumer offer model; it does not imply multi-tenant seller administration or real settlement in V1.

@@ -11,6 +11,7 @@ import {
   editOrderDeliveryCommandSchema,
   evaluationResponseSchema,
   indianAddressSchema,
+  intelligentSearchResponseSchema,
   orderListResponseSchema,
   orderResponseSchema,
   productDetailResponseSchema,
@@ -35,6 +36,7 @@ import { Hono } from "hono";
 import { addCartItem, moveCartItem, readCart, removeCartItem, updateCartItem } from "./modules/cart/cart.js";
 import { catalogSeedProducts } from "./modules/catalog/catalogSeed.js";
 import { compareProducts, estimateDelivery, getEvaluation, getProduct, getProductByOffer, listCategories, searchProducts, searchSuggestions } from "./modules/discovery/discovery.js";
+import { intelligentSearch } from "./modules/intelligence/intelligence.js";
 import { advanceFulfillment, cancelOrder, confirmCheckout, createCheckoutQuote, editOrderDelivery, getOrder, listOrders } from "./modules/orders/orders.js";
 import { confirmSupportProposal, createReturn, createSupportProposal, getReturn, getReturnEligibility, listReturns, submitReview } from "./modules/returns/returns.js";
 import { browserProtectionMiddleware, fail, ok, policyMiddleware, requestIdMiddleware, securityHeadersMiddleware, type AppBindings } from "./platform/http.js";
@@ -100,6 +102,13 @@ app.get("/v1/search", (context) => {
     requestId: context.get("requestId"),
     data: searchProducts(query, filters.data, sort.data)
   });
+  return context.json(response);
+});
+
+app.get("/v1/ai/search", (context) => {
+  const query = context.req.query("q") ?? "";
+  if (query.trim().length === 0 || query.length > 200) return fail(context, 400, "validation_error", "Enter a shopping query of up to 200 characters.");
+  const response = intelligentSearchResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: intelligentSearch(query) });
   return context.json(response);
 });
 
