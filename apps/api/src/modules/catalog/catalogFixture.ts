@@ -1,4 +1,4 @@
-import type { Category, ProductOffer, ProductVariant } from "@veyra/contracts";
+import type { Category, ProductOffer, ProductQuestion, ProductReview, ProductVariant } from "@veyra/contracts";
 
 type CatalogProduct = {
   id: string;
@@ -13,6 +13,8 @@ type CatalogProduct = {
   specifications: Record<string, string>;
   variants: ProductVariant[];
   offers: ProductOffer[];
+  reviews: ProductReview[];
+  questions: ProductQuestion[];
 };
 
 const bagsCategory: Category = { slug: "bags", name: "Bags" };
@@ -40,6 +42,12 @@ export const catalogProducts: CatalogProduct[] = [
     offers: [
       { id: "018f3f7d-486c-7d73-9e13-83d8d0c75614", variantId: "018f3f7d-486c-7d73-9e13-83d8d0c75612", sellerName: "Veyra Retail", price: { currency: "INR", amountMinor: 459900 }, condition: "new", availability: "available", expeditedEligible: true },
       { id: "018f3f7d-486c-7d73-9e13-83d8d0c75615", variantId: "018f3f7d-486c-7d73-9e13-83d8d0c75613", sellerName: "Veyra Retail", price: { currency: "INR", amountMinor: 459900 }, condition: "new", availability: "available", expeditedEligible: true }
+    ],
+    reviews: [
+      { id: "018f3f7d-486c-7d73-9e13-83d8d0c75651", productId: "018f3f7d-486c-7d73-9e13-83d8d0c75611", rating: 5, title: "Reliable work bag", body: "The laptop sleeve is snug and the fabric has handled daily commute rain.", authorDisplayName: "Nisha", verifiedPurchase: true, createdAt: "2026-09-01T09:00:00.000Z" }
+    ],
+    questions: [
+      { id: "018f3f7d-486c-7d73-9e13-83d8d0c75661", productId: "018f3f7d-486c-7d73-9e13-83d8d0c75611", question: "Does it stand upright when empty?", answer: "It stands upright when lightly packed, but may fold when fully empty.", createdAt: "2026-09-02T09:00:00.000Z" }
     ]
   },
   {
@@ -59,6 +67,12 @@ export const catalogProducts: CatalogProduct[] = [
     offers: [
       { id: "018f3f7d-5b68-7aef-9e10-2d890fc8a614", variantId: "018f3f7d-5b68-7aef-9e10-2d890fc8a613", sellerName: "Veyra Retail", price: { currency: "INR", amountMinor: 799900 }, condition: "new", availability: "available", expeditedEligible: false },
       { id: "018f3f7d-5b68-7aef-9e10-2d890fc8a615", variantId: "018f3f7d-5b68-7aef-9e10-2d890fc8a613", sellerName: "Audio Outlet", price: { currency: "INR", amountMinor: 749900 }, condition: "open_box", availability: "withdrawn", expeditedEligible: false }
+    ],
+    reviews: [
+      { id: "018f3f7d-5b68-7aef-9e10-2d890fc8a651", productId: "018f3f7d-5b68-7aef-9e10-2d890fc8a612", rating: 4, title: "Compact case", body: "Good passive isolation for calls; the case fits a jeans pocket.", authorDisplayName: "Kabir", verifiedPurchase: true, createdAt: "2026-09-03T09:00:00.000Z" }
+    ],
+    questions: [
+      { id: "018f3f7d-5b68-7aef-9e10-2d890fc8a661", productId: "018f3f7d-5b68-7aef-9e10-2d890fc8a612", question: "Can each earbud be used independently?", answer: "Yes, either earbud can be used on its own after pairing.", createdAt: "2026-09-04T09:00:00.000Z" }
     ]
   },
   {
@@ -77,6 +91,10 @@ export const catalogProducts: CatalogProduct[] = [
     ],
     offers: [
       { id: "018f3f7d-6c72-7d73-9e13-83d8d0c75618", variantId: "018f3f7d-6c72-7d73-9e13-83d8d0c75617", sellerName: "Veyra Home", price: { currency: "INR", amountMinor: 1299900 }, condition: "new", availability: "unavailable", expeditedEligible: false }
+    ],
+    reviews: [],
+    questions: [
+      { id: "018f3f7d-6c72-7d73-9e13-83d8d0c75661", productId: "018f3f7d-6c72-7d73-9e13-83d8d0c75616", question: "Is assembly included?", answer: null, createdAt: "2026-09-05T09:00:00.000Z" }
     ]
   }
 ];

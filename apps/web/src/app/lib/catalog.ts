@@ -4,7 +4,9 @@ export type CatalogResult = {
   brand: string;
   category: { name: string; slug: string };
   rating: number;
-  selectedOffer: { id: string; price: { amountMinor: number }; availability: "available" | "unavailable" | "withdrawn" };
+  reviewCount: number;
+  selectedVariant: { id: string; name: string };
+  selectedOffer: { id: string; sellerName: string; price: { amountMinor: number }; availability: "available" | "unavailable" | "withdrawn" };
 };
 
 type ApiEnvelope<Data> = { data: Data };
@@ -45,4 +47,32 @@ export async function getProduct(slug: string, search: URLSearchParams) {
     offers: Array<{ id: string; sellerName: string; price: { amountMinor: number }; availability: string }>;
     delivery: { status: "address_required" | "available" | "unavailable"; disclosure: string };
   }>(`/v1/products/${encodeURIComponent(slug)}${query.length > 0 ? `?${query}` : ""}`);
+}
+
+export async function getEvaluation(slug: string) {
+  return apiGet<{
+    product: Awaited<ReturnType<typeof getProduct>>;
+    reviews: Array<{ id: string; rating: number; title: string; body: string; authorDisplayName: string; verifiedPurchase: boolean }>;
+    questions: Array<{ id: string; question: string; answer: string | null }>;
+    relatedProducts: Array<CatalogResult & { specifications: Record<string, string | null> }>;
+  }>(`/v1/products/${encodeURIComponent(slug)}/evaluation`);
+}
+
+export async function compareCatalog(slugs: string[]) {
+  return apiGet<{
+    products: Array<CatalogResult & { specifications: Record<string, string | null> }>;
+    fieldOrder: string[];
+  }>(`/v1/compare?products=${encodeURIComponent(slugs.join(","))}`);
+}
+
+export type Cart = {
+  id: string;
+  items: Array<{ id: string; product: CatalogResult; quantity: number; lineSubtotal: { amountMinor: number }; lineDiscount: { amountMinor: number }; availabilityStatus: string }>;
+  savedForLater: Array<{ id: string; product: CatalogResult; quantity: number }>;
+  totals: { itemSubtotal: { amountMinor: number }; discountTotal: { amountMinor: number }; shipping: { amountMinor: number }; estimatedTax: { amountMinor: number }; grandTotal: { amountMinor: number }; disclosure: string };
+  itemCount: number;
+};
+
+export async function getCart() {
+  return apiGet<Cart>("/v1/cart");
 }

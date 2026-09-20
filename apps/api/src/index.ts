@@ -1,19 +1,25 @@
 import { parseAppEnvironment } from "@veyra/config";
 import {
+  addCartItemCommandSchema,
+  cartResponseSchema,
   categoryListResponseSchema,
+  compareResponseSchema,
   deliveryEstimateResponseSchema,
+  evaluationResponseSchema,
   indianAddressSchema,
   productDetailResponseSchema,
   productSeedListResponseSchema,
   searchFiltersSchema,
   searchListResponseSchema,
   searchSortSchema,
-  suggestionsResponseSchema
+  suggestionsResponseSchema,
+  updateCartItemCommandSchema
 } from "@veyra/contracts";
 import { Hono } from "hono";
 
+import { addCartItem, moveCartItem, readCart, removeCartItem, updateCartItem } from "./modules/cart/cart.js";
 import { catalogSeedProducts } from "./modules/catalog/catalogSeed.js";
-import { estimateDelivery, getProduct, getProductByOffer, listCategories, searchProducts, searchSuggestions } from "./modules/discovery/discovery.js";
+import { compareProducts, estimateDelivery, getEvaluation, getProduct, getProductByOffer, listCategories, searchProducts, searchSuggestions } from "./modules/discovery/discovery.js";
 import { browserProtectionMiddleware, fail, ok, policyMiddleware, requestIdMiddleware, securityHeadersMiddleware, type AppBindings } from "./platform/http.js";
 
 export const appEnvironment = parseAppEnvironment(process.env);
@@ -93,6 +99,33 @@ app.get("/v1/search/suggestions", (context) => {
   return context.json(response);
 });
 
+app.get("/v1/compare", (context) => {
+  const slugs = (context.req.query("products") ?? "").split(",");
+  const comparison = compareProducts(slugs);
+  if (comparison.products.length === 0 || slugs.filter((slug) => slug.trim().length > 0).length > 3) {
+    return fail(context, 400, "validation_error", "Compare one to three valid products.");
+  }
+  const response = compareResponseSchema.parse({
+    apiVersion: "v1",
+    requestId: context.get("requestId"),
+    data: comparison
+  });
+  return context.json(response);
+});
+
+app.get("/v1/products/:slug/evaluation", (context) => {
+  const evaluation = getEvaluation(context.req.param("slug"));
+  if (evaluation === undefined) {
+    return fail(context, 404, "not_found", "Product was not found.");
+  }
+  const response = evaluationResponseSchema.parse({
+    apiVersion: "v1",
+    requestId: context.get("requestId"),
+    data: evaluation
+  });
+  return context.json(response);
+});
+
 app.get("/v1/products/:slug", (context) => {
   const variantId = context.req.query("variant");
   const offerId = context.req.query("offer");
@@ -109,6 +142,39 @@ app.get("/v1/products/:slug", (context) => {
     data: product
   });
   return context.json(response);
+});
+
+app.get("/v1/cart", (context) => {
+  const response = cartResponseSchema.parse({
+    apiVersion: "v1",
+    requestId: context.get("requestId"),
+    data: readCart(cartIdFromRequest(context.req.header("x-veyra-cart-id")))
+  });
+  return context.json(response);
+});
+
+app.post("/v1/cart/items", async (context) => {
+  const payload = addCartItemCommandSchema.safeParse(await context.req.json<unknown>());
+  if (!payload.success) return fail(context, 400, "validation_error", "Choose a valid offer, variant, and quantity.");
+  return cartMutationResponse(context, addCartItem(cartIdFromRequest(context.req.header("x-veyra-cart-id")), payload.data, context.req.header("idempotency-key")));
+});
+
+app.patch("/v1/cart/items/:lineId", async (context) => {
+  const payload = updateCartItemCommandSchema.safeParse(await context.req.json<unknown>());
+  if (!payload.success) return fail(context, 400, "validation_error", "Enter a supported cart quantity.");
+  return cartMutationResponse(context, updateCartItem(cartIdFromRequest(context.req.header("x-veyra-cart-id")), context.req.param("lineId"), payload.data, context.req.header("idempotency-key")));
+});
+
+app.post("/v1/cart/items/:lineId/save-for-later", (context) => {
+  return cartMutationResponse(context, moveCartItem(cartIdFromRequest(context.req.header("x-veyra-cart-id")), context.req.param("lineId"), "saved_for_later", context.req.header("idempotency-key")));
+});
+
+app.post("/v1/cart/items/:lineId/restore", (context) => {
+  return cartMutationResponse(context, moveCartItem(cartIdFromRequest(context.req.header("x-veyra-cart-id")), context.req.param("lineId"), "cart", context.req.header("idempotency-key")));
+});
+
+app.delete("/v1/cart/items/:lineId", (context) => {
+  return cartMutationResponse(context, removeCartItem(cartIdFromRequest(context.req.header("x-veyra-cart-id")), context.req.param("lineId"), context.req.header("idempotency-key")));
 });
 
 app.post("/v1/delivery/estimate", async (context) => {
@@ -129,6 +195,20 @@ app.post("/v1/delivery/estimate", async (context) => {
   });
   return context.json(response);
 });
+
+function cartIdFromRequest(value: string | undefined): string {
+  return value === undefined || value.trim().length === 0 ? "local-guest-cart" : value.trim().slice(0, 120);
+}
+
+function cartMutationResponse(context: Parameters<typeof fail>[0], result: ReturnType<typeof addCartItem>) {
+  if (result.status === "ok") {
+    const response = cartResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.cart });
+    return context.json(response);
+  }
+  if (result.status === "conflict") return fail(context, 409, "idempotency_conflict", result.message);
+  if (result.status === "policy_conflict") return fail(context, 409, "policy_conflict", result.message);
+  return fail(context, 404, "not_found", result.message);
+}
 
 function parseOptionalInteger(value: string | undefined): number | undefined {
   if (value === undefined) return undefined;

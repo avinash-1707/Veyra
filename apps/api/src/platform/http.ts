@@ -121,7 +121,7 @@ export function ok<Data>(context: AppContext, data: Data) {
   });
 }
 
-export function fail(context: AppContext, status: 400 | 403 | 404 | 413 | 429 | 500, code: ApiErrorCode, message: string) {
+export function fail(context: AppContext, status: 400 | 403 | 404 | 409 | 413 | 429 | 500, code: ApiErrorCode, message: string) {
   return context.json(
     {
       apiVersion: "v1",

@@ -3,6 +3,7 @@ import {
   type DeliveryEstimate,
   type IndianAddress,
   type ProductDetail,
+  type ProductFactsheet,
   type ProductOffer,
   type ProductSummary,
   type ProductVariant,
@@ -73,6 +74,26 @@ function selectedOffer(product: CatalogProduct, selection: ProductSelection): Pr
 
 function selectedVariant(product: CatalogProduct, offer: ProductOffer): ProductVariant | undefined {
   return product.variants.find((variant) => variant.id === offer.variantId);
+}
+
+function factsheet(product: CatalogProduct, selection: ProductSelection): ProductFactsheet | undefined {
+  const offer = selectedOffer(product, selection);
+  if (offer === undefined) return undefined;
+  const variant = selectedVariant(product, offer);
+  if (variant === undefined) return undefined;
+
+  return {
+    id: product.id,
+    slug: product.slug,
+    title: product.title,
+    brand: product.brand,
+    category: product.category,
+    rating: product.rating,
+    reviewCount: product.reviewCount,
+    selectedVariant: variant,
+    selectedOffer: offer,
+    specifications: product.specifications
+  };
 }
 
 function summary(product: CatalogProduct, selection: ProductSelection, address?: IndianAddress): ProductSummary | undefined {
@@ -153,6 +174,34 @@ function compareResults(sort: SearchSort, left: ProductSummary, right: ProductSu
 export function getProductByOffer(offerId: string): ProductDetail | undefined {
   const product = catalogProducts.find((candidate) => candidate.offers.some((offer) => offer.id === offerId));
   return product === undefined ? undefined : getProduct(product.slug, { offerId });
+}
+
+export function getFactsheetByOffer(offerId: string, variantId?: string): ProductFactsheet | undefined {
+  const product = catalogProducts.find((candidate) => candidate.offers.some((offer) => offer.id === offerId));
+  return product === undefined ? undefined : factsheet(product, { offerId, ...(variantId === undefined ? {} : { variantId }) });
+}
+
+export function compareProducts(slugs: string[]) {
+  const uniqueSlugs = [...new Set(slugs.map((slug) => slug.trim()).filter((slug) => slug.length > 0))].slice(0, 3);
+  const products = uniqueSlugs
+    .map((slug) => catalogProducts.find((candidate) => candidate.slug === slug))
+    .filter((product): product is CatalogProduct => product !== undefined)
+    .map((product) => factsheet(product, {}))
+    .filter((product): product is ProductFactsheet => product !== undefined);
+  const fieldOrder = [...new Set(products.flatMap((product) => Object.keys(product.specifications)))].sort((left, right) => left.localeCompare(right));
+  return { products, fieldOrder };
+}
+
+export function getEvaluation(slug: string) {
+  const product = catalogProducts.find((candidate) => candidate.slug === slug);
+  const detail = getProduct(slug, {});
+  if (product === undefined || detail === undefined) return undefined;
+  const relatedProducts = catalogProducts
+    .filter((candidate) => candidate.category.slug === product.category.slug && candidate.slug !== product.slug)
+    .map((candidate) => factsheet(candidate, {}))
+    .filter((candidate): candidate is ProductFactsheet => candidate !== undefined)
+    .slice(0, 4);
+  return { product: detail, reviews: product.reviews, questions: product.questions, relatedProducts };
 }
 
 export function searchProducts(query: string, filters: SearchFilters, sort: SearchSort) {

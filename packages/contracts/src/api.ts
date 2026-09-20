@@ -11,7 +11,9 @@ export const apiErrorCodeSchema = z.enum([
   "payload_too_large",
   "too_many_requests",
   "request_timeout",
-  "forbidden"
+  "forbidden",
+  "idempotency_conflict",
+  "policy_conflict"
 ]);
 
 export const apiErrorSchema = z.object({
