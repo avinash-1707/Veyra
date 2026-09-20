@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import Link from "next/link";
 
-import { ProductCard, SectionShell, StatePanel } from "@/components/marketplace";
+import { ProductCard, ProductCardSkeleton, SectionShell, StatePanel } from "@/components/marketplace";
+import { Skeleton } from "@/components/ui/skeleton";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -9,14 +11,10 @@ import { getCategories, searchCatalog } from "@/lib/api/server/discovery";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
-  const catalog = await Promise.all([getCategories(), searchCatalog(new URLSearchParams())]).catch(() => undefined);
-  if (catalog === undefined) return <CatalogUnavailable />;
-  const [categories, products] = catalog;
-
+export default function Home() {
   return (
-    <main className="page-shell">
-      <section className="hero grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-end">
+    <main className="page-shell home-page-shell">
+      <section className="hero home-hero grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-end">
         <div>
           <p className="eyebrow">India marketplace</p>
           <h1>Find products with the details that matter.</h1>
@@ -43,11 +41,28 @@ export default async function Home() {
           </p>
         </aside>
       </section>
-      <SectionShell
-        eyebrow="Browse by department"
-        title="Shop categories"
-        description="Start with familiar shelves, then narrow by search when you know what matters."
-      >
+      <Suspense fallback={<HomeCategoriesSkeleton />}>
+        <HomeCategoriesSection />
+      </Suspense>
+      <Suspense fallback={<HomeFeaturedProductsSkeleton />}>
+        <HomeFeaturedProductsSection />
+      </Suspense>
+    </main>
+  );
+}
+
+export async function HomeCategoriesSection() {
+  const categories = await getCategories().catch(() => undefined);
+
+  return (
+    <SectionShell
+      eyebrow="Browse by department"
+      title="Shop categories"
+      description="Start with familiar shelves, then narrow by search when you know what matters."
+    >
+      {categories === undefined ? (
+        <CatalogSectionError message="We couldn't load categories. Use the navigation search to keep shopping." />
+      ) : (
         <ul className="category-list">
           {categories.map((category) => (
             <li key={category.slug}>
@@ -58,20 +73,80 @@ export default async function Home() {
             </li>
           ))}
         </ul>
-      </SectionShell>
-      <SectionShell
-        eyebrow="Editorial picks"
-        title="Featured products"
-        description="Scan product essentials before opening a detail page."
-        action={
-          <Link className={cn(buttonVariants({ variant: "outline", size: "sm" }))} href="/">
-            Browse departments
-          </Link>
-        }
-      >
+      )}
+    </SectionShell>
+  );
+}
+
+export async function HomeFeaturedProductsSection() {
+  const products = await searchCatalog(new URLSearchParams()).catch(() => undefined);
+
+  return (
+    <SectionShell
+      eyebrow="Editorial picks"
+      title="Featured products"
+      description="Scan product essentials before opening a detail page."
+      action={
+        <Link className={cn(buttonVariants({ variant: "outline", size: "sm" }))} href="/">
+          Browse departments
+        </Link>
+      }
+    >
+      {products === undefined ? (
+        <CatalogSectionError message="We couldn't load featured products. Browse a category or use the navigation search." />
+      ) : (
         <ProductList products={products.results} />
-      </SectionShell>
-    </main>
+      )}
+    </SectionShell>
+  );
+}
+
+export function HomeCategoriesSkeleton() {
+  return (
+    <SectionShell
+      eyebrow="Browse by department"
+      title="Shop categories"
+      description="Start with familiar shelves, then narrow by search when you know what matters."
+    >
+      <div className="category-list" role="status" aria-busy="true" aria-label="Loading categories">
+        <span className="sr-only">Loading categories</span>
+        {Array.from({ length: 4 }, (_, index) => (
+          <div className="category-skeleton" key={index} aria-hidden="true">
+            <Skeleton className="h-5 w-3/5" />
+            <Skeleton className="mt-3 h-4 w-4/5" />
+          </div>
+        ))}
+      </div>
+    </SectionShell>
+  );
+}
+
+export function HomeFeaturedProductsSkeleton() {
+  return (
+    <SectionShell
+      eyebrow="Editorial picks"
+      title="Featured products"
+      description="Scan product essentials before opening a detail page."
+    >
+      <div role="status" aria-busy="true" aria-label="Loading featured products">
+        <span className="sr-only">Loading featured products</span>
+        <ul className="product-grid" aria-hidden="true">
+          {Array.from({ length: 4 }, (_, index) => (
+            <li key={index}>
+              <ProductCardSkeleton />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </SectionShell>
+  );
+}
+
+function CatalogSectionError({ message }: { message: string }) {
+  return (
+    <p className="catalog-section-error" role="alert">
+      {message}
+    </p>
   );
 }
 

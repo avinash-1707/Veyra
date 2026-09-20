@@ -21,6 +21,9 @@ describe("SiteHeader", () => {
     expect(markup).toContain('href="/login"');
     expect(markup).toContain('href="/signup"');
     expect(markup).not.toContain("Open account menu for");
+    expect(markup.indexOf('href="/intelligent-search"')).toBeLessThan(markup.indexOf('href="/cart"'));
+    expect(markup.indexOf('href="/cart"')).toBeLessThan(markup.indexOf('href="/login"'));
+    expect(markup.indexOf('href="/login"')).toBeLessThan(markup.indexOf('href="/signup"'));
   });
 
   it("shows the account trigger instead of authentication CTAs for a shopper session", async () => {

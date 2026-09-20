@@ -37,7 +37,14 @@ export async function SiteHeader() {
           Veyra
         </Link>
         <NavbarSearch />
+        <Link className="guided-search-link" href="/intelligent-search">
+          <span aria-hidden="true">✨</span>
+          Guided Search
+        </Link>
         <div className="nav-actions">
+          <Link className="cart-link" href="/cart" aria-label="View cart">
+            <FiShoppingCart aria-hidden="true" />
+          </Link>
           {shopper ? (
             <AccountMenu shopper={shopper.user} />
           ) : (
@@ -50,13 +57,6 @@ export async function SiteHeader() {
               </Link>
             </div>
           )}
-          <Link className="guided-search-link" href="/intelligent-search">
-            <span aria-hidden="true">✨</span>
-            Guided Search
-          </Link>
-          <Link className="cart-link" href="/cart" aria-label="View cart">
-            <FiShoppingCart aria-hidden="true" />
-          </Link>
         </div>
       </nav>
     </header>
