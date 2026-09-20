@@ -19,25 +19,28 @@ This is the record of what actually happened, not a restatement of planned work.
 
 | Dependency | Status | Owner/next action |
 |---|---|---|
-| LLM provider enablement | Gemini is the reference initial provider; credentials, provider terms, region/retention posture, quotas, and cost controls are not configured/approved | Resolve D-07 and D-11 before AI provider enablement |
-| Hosting and managed services | Not selected | Resolve D-02 before deployment work |
-| Payment/shipping adapters | Simulated by design | Keep mock-only until future trigger |
+| LLM provider enablement | OpenRouter selected for LLM access; initial candidate `google/gemini-2.5-flash-lite`, backup `openai/gpt-4.1-mini` or current equivalent; credentials, downstream model policy, provider terms, retention posture, and timeout behavior are not configured/approved | Resolve D-07 and remaining D-11 details before AI provider enablement |
+| Hosting and managed services | pnpm, Vercel for Next.js web/Hono API, Neon PostgreSQL, Upstash Redis, Qdrant Cloud, Vercel native scheduled/background services, Better Auth, Nodemailer selected; region, runtime, job cadence, SLO, and incident details remain open | Resolve remaining D-02/D-03 details before deployment work |
+| Payment/shipping adapters | Simulated by design; US/USD tax/shipping/return/refund/reservation policy confirmed | Create D-04 policy fixtures before shopper pricing/checkout work |
 
 ## Decision resolutions at a glance
 
 | Decision | Status | ADR |
 |---|---|---|
 | D-01 Baseline before AI | Confirmed | ADR-001 |
-| D-02 Deployment provider/topology | Open | ADR-004 |
-| D-03 API framework and auth/session choices | Open | ADR-004 |
-| D-04 Commerce policy boundary | Open | ADR-005 |
+| D-02 Deployment provider/topology | Partially resolved: pnpm, Vercel, Neon, Upstash, Qdrant Cloud, Vercel native background services selected; operations details open | ADR-004 |
+| D-03 API framework and auth/session choices | Partially resolved: Hono, Better Auth credentials + Google OAuth, and Nodemailer selected; hardening details open | ADR-004 |
+| D-04 Commerce policy boundary | Confirmed: US/USD simulation policy | ADR-005 |
 | D-05–D-10 Pre-build security and operational controls | Open | ADR-008 |
-| D-11 AI provider operational enablement | Open | ADR-010 |
+| D-11 AI provider operational enablement | Partially resolved: OpenRouter and candidate models selected; operational/model-policy details open | ADR-010 |
 
 ## Log
 
 | Date | Unit | Type | Matches spec? | Summary | Affected area | ADR / D-ID | Follow-up |
 |---|---|---|---|---|---|---|---|
+| 2026-09-20 | U0 | Decision resolution | Yes | Confirmed D-04 US/USD simulation commerce policy after owner approval: estimated tax, shipping, delivery, reservation, cancellation, return/refund, and P0 promotion boundaries. | Commerce policy | ADR-005 / D-04 | Create normal and denied fixtures plus simulation disclosure copy before shopper pricing/checkout work. |
+| 2026-09-20 | U0 | Decision resolution | Yes | Added owner selections: pnpm, Neon PostgreSQL, Upstash Redis, Qdrant Cloud, Vercel native scheduled/background services where suitable, Better Auth credentials + Google OAuth, Nodemailer email, USD, and OpenRouter candidate models. Proposed a simple US simulation commerce policy for D-04 confirmation. | Platform, auth, email, data services, commerce policy, AI provider | ADR-004 / ADR-005 / ADR-010 / D-02 / D-03 / D-04 / D-11 | Define provider regions/runtime/job cadence, Better Auth/Nodemailer hardening, and OpenRouter model/timeout/evaluation policy. |
+| 2026-09-20 | U0 | Decision resolution | Yes | Partially resolved platform choices: Vercel for Next.js web and Hono API, Hono for the API framework, Better Auth for authentication foundation, and OpenRouter for LLM access. Atlas verified current scope does not require WebSockets or persistent backend connections; outbox workers still need scheduled/managed execution. | Deployment, API, auth, AI provider | ADR-004 / ADR-010 / D-02 / D-03 / D-11 | Define Vercel regions/runtime limits/background jobs, Better Auth session/CSRF/CORS/CSP details, and OpenRouter operational/model policy before gated implementation. |
 | 2026-09-20 | U0 | Gap | Yes | Reconciled architecture-review gaps: corrected D-02 ADR mapping, clarified Gemini enablement as operationally open, normalized offer event naming, and added D-11 AI provider enablement tracking. | Documentation and architecture readiness | ADR-004 / ADR-010 / D-02 / D-11 | Resolve D-02–D-11 before their gated implementation work. |
 | 2026-09-20 | U0 | Decision resolution | Yes | Resolved customer-service scope as P0 direct deterministic self-service; AI support remains P1b. | Product scope | ADR-009 | Build U4 after U3. |
 | 2026-09-20 | U0 | Gap | Yes | Added D-05–D-10 security, privacy, abuse, operator, media, and recovery gates after pre-build audit. | Architecture and operations | ADR-008 / D-05–D-10 | Resolve before the relevant U0 capability or production launch. |

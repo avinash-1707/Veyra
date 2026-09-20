@@ -4,7 +4,7 @@ Veyra is a planned AI-native consumer marketplace. It targets a complete convent
 
 ## Quick start
 
-This repository currently contains product and architecture documentation only. No application runtime, package manager, or local setup command has been established.
+This repository currently contains product and architecture documentation only. pnpm is selected as the package manager, but no application runtime, package configuration, or local setup command has been established.
 
 ## Commands
 

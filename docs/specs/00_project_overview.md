@@ -35,22 +35,22 @@ Baseline-before-AI, a consumer-only scope, simulated logistics/payments, server-
 Search-to-detail, detail-to-cart, cart-to-order, compare-to-cart, intent correction, no-result, return completion, support resolution, and API latency. See [PRD §10](../PRD.md#10-success-measures).
 
 ## Risks & external dependencies
-Catalog quality, delivery-rule realism, provider availability, retrieval quality, privacy controls, and inventory concurrency affect correctness. External deployment and framework/auth choices remain open in [D-02–D-03](03_build_plan.md#master-decision-coverage-table); AI provider operational enablement remains open in [D-11](03_build_plan.md#master-decision-coverage-table).
+Catalog quality, delivery-rule realism, provider availability, retrieval quality, privacy controls, and inventory concurrency affect correctness. pnpm, Vercel, Hono, Better Auth, Neon PostgreSQL, Upstash Redis, Qdrant Cloud, Nodemailer, and OpenRouter are selected, while their operational hardening details remain tracked in [D-02–D-03 and D-11](03_build_plan.md#master-decision-coverage-table).
 
 ## Glossary
 **Offer:** seller-specific price, condition, stock, and delivery terms. **Variant:** selectable product configuration. **Baseline:** usable non-AI equivalent. **Outbox:** transactional event record consumed by workers.
 
 ## Open questions still to validate
-- **[Assumption] D-02:** managed deployment provider and production topology are unspecified; resolve before deployment implementation.
-- **[Assumption] D-03:** Fastify versus NestJS and exact session/auth mechanism are unspecified; resolve before API foundations.
-- **[Assumption] D-04:** initial locale/currency is one supported configuration; exact policy needs confirmation before catalog and tax implementation.
-- **[Assumption] D-05:** authentication, session, CSRF, CORS, and account-recovery contract must be selected before identity implementation.
-- **[Assumption] D-06:** rate-limit, abuse, and AI-cost policy must be selected before any public or authenticated endpoint is exposed.
+- **[Assumption] D-02:** pnpm, Vercel, Neon PostgreSQL, Upstash Redis, Qdrant Cloud, and Vercel native scheduled/background services where suitable are selected. Final regions, function runtime limits, job cadence, SLO ownership, incident runbooks, production origins, and Google OAuth production callback configuration are pre-staging/production deployment gates, not U0/local coding blockers.
+- **[Assumption] D-03:** Hono is selected for the TypeScript API; Drizzle ORM with committed SQL migrations is selected for database access/schema changes; Better Auth is selected for credentials, Google OAuth, and database-backed opaque sessions; Nodemailer is selected behind an email adapter. Session policy is 7-day expiry, 1-day rolling refresh, HTTP-only secure SameSite=Lax cookies, central CSRF/origin/CORS/CSP enforcement, and 15-minute single-use verification/reset tokens. Gmail SMTP is local/prototype only; production email provider, verified sender domain, and deliverability are deployment gates.
+- **[Confirmed] D-04:** use a single US/USD simulation policy with 8.25% estimated tax, standard shipping free at/above $35 and $5.99 otherwise, expedited shipping $12.99 where enabled, standard delivery 3–5 simulated business days, expedited 1–2 simulated business days, 15-minute checkout quote/reservation expiry, cancellation until shipped/in-transit, 30-day delivered-item return window, refund after simulated receipt/approval to the mock payment method, and P0 configured checkout-code fixtures while deal discovery/coupon claiming remains P1.
+- **[Assumption] D-05:** initial identity/browser contract is selected for U0/local implementation: Better Auth opaque sessions, 7-day expiry, 1-day rolling refresh, HTTP-only secure SameSite=Lax cookies, central CSRF/origin/CORS/CSP enforcement, and 15-minute single-use verification/reset tokens. Harden rate limits, origins, and production secrets before public/staging exposure.
+- **[Assumption] D-06:** rate-limit, abuse, concurrency where needed, and timeout policy must be selected before any public or authenticated endpoint is exposed. App-level AI spend caps are not required because budget is managed in OpenRouter.
 - **[Assumption] D-07:** data classification, retention, deletion/export, and incident-response policy must be approved before production personal/behavioral data collection.
 - **[Assumption] D-08:** internal operator roles and privileged-access controls must be selected before catalog/moderation/operations tooling exists.
 - **[Assumption] D-09:** media-upload validation, quarantine, scanning, and publication policy must be selected before uploads are enabled.
 - **[Assumption] D-10:** backup/restore, RPO/RTO, monitoring, and incident ownership must be selected before production launch.
-- **[Assumption] D-11:** Gemini is the reference initial LLM provider, but credentials, terms, region/retention posture, quotas, cost controls, fallback behavior, and evaluation thresholds must be approved before provider-backed AI is enabled.
+- **[Assumption] D-11:** OpenRouter is selected for LLM access with `google/gemini-2.5-flash-lite` as the initial candidate and `openai/gpt-4.1-mini` or current equivalent as backup, but credentials, downstream model policy, provider/model terms, retention posture, timeout behavior, fallback behavior, and evaluation thresholds must be approved before provider-backed AI is enabled. Spend caps are managed in OpenRouter.
 
 ## Product boundary and operating model
 Veyra is a consumer shopping surface over a curated, simulated marketplace. It presents seller offers and fulfillment data to shoppers, but does not expose seller, warehouse, payment-processor, or carrier operational tools. "Marketplace" describes the consumer offer model; it does not imply multi-tenant seller administration or real settlement in V1.

@@ -1,6 +1,6 @@
 # Veyra agent guide
 
-Veyra is an AI-native consumer marketplace: it first delivers conventional Amazon-style shopping, checkout, order, return, and support journeys, then adds evidence-grounded AI discovery and guidance. The confirmed reference architecture is a TypeScript modular monolith: Next.js web, separate TypeScript API, PostgreSQL source of truth, Redis, Qdrant, an LLM provider adapter (Gemini initially), and outbox workers. This repository currently contains planning documentation only; do not invent tooling or implementation facts.
+Veyra is an AI-native consumer marketplace: it first delivers conventional Amazon-style shopping, checkout, order, return, and support journeys, then adds evidence-grounded AI discovery and guidance. The confirmed reference architecture is a TypeScript modular monolith using pnpm workspaces and strict TypeScript: Next.js web on Vercel, separate Hono TypeScript API on Vercel, Drizzle ORM with committed SQL migrations, Better Auth authentication foundation with credentials/Google OAuth/database-backed opaque sessions, Neon PostgreSQL source of truth, Upstash Redis, Qdrant Cloud, Nodemailer email adapter with Gmail SMTP only for local/prototype email, an OpenRouter-backed LLM provider adapter, and outbox workers via Vercel native scheduled/background services where suitable. This repository currently contains planning documentation only; do not invent tooling or implementation facts.
 
 ## Read first
 
@@ -51,4 +51,4 @@ Veyra is an AI-native consumer marketplace: it first delivers conventional Amazo
 
 Update [progress](docs/progress-tracker.md) for every implementation, deviation, gap, or decision resolution. A resolved `D-##` requires four synchronized changes: the progress log, matching ADR, [build-plan coverage row](docs/specs/03_build_plan.md#master-decision-coverage-table), and the original assumption/open question. Create an ADR before a new material design judgment. Record material deviations before treating them as the new specification. Promote a deferral only after its named evidence trigger is met.
 
-No package manager, build command, test command, or runtime command is established in this repository yet.
+pnpm is selected as the package manager, but no package configuration, build command, test command, or runtime command is established in this repository yet.

@@ -9,15 +9,16 @@
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Application shape | Modular monolith | Keeps the system easy to ship, test, and deploy while preserving domain boundaries that can later be extracted. |
+| Application shape | Modular monolith with pnpm workspaces and TypeScript strict mode | Keeps the system easy to ship, test, and deploy while preserving domain boundaries that can later be extracted. |
 | Web client | Next.js + TypeScript | Supports responsive SSR/streaming-capable commerce pages, route-level loading states, and a typed component system. |
-| API | TypeScript backend (Fastify or NestJS) | Owns authentication, domain logic, transactions, authorization, and public API contracts. It is separate from the web UI so commerce rules are not tied to React routes. |
-| System of record | PostgreSQL | Strong transactional consistency for catalog, offers, carts, orders, returns, reviews, and user data. |
-| Vector retrieval | Qdrant | Holds non-authoritative product/review embeddings for semantic candidate retrieval. PostgreSQL remains authoritative. |
-| Cache and ephemeral data | Redis | Caches, rate limits, short-lived session data, job coordination, and idempotency keys. It is never the sole record of a purchase or order. |
-| AI integration | Provider adapter with Gemini as the reference initial implementation | Enables structured intent extraction and grounded summaries while preserving deterministic fallbacks and future provider choice. Credentials, provider terms, retention posture, quotas, and cost controls remain D-11 operational enablement work. |
+| API | Hono TypeScript backend deployed on Vercel | Owns authentication, domain logic, transactions, authorization, and public API contracts. It is separate from the web UI so commerce rules are not tied to React routes. |
+| Data access and migrations | Drizzle ORM + committed SQL migrations | Provides typed database access while keeping schema changes reviewable, reproducible, and deployment-gated. |
+| System of record | Neon PostgreSQL | Strong transactional consistency for catalog, offers, carts, orders, returns, reviews, and user data. PostgreSQL remains authoritative. |
+| Vector retrieval | Qdrant Cloud | Holds non-authoritative product/review embeddings for semantic candidate retrieval. PostgreSQL remains authoritative; Qdrant indexes are rebuildable. Initial use targets Qdrant Cloud's advertised free tier, with pricing/limits rechecked before production. |
+| Cache and ephemeral data | Upstash Redis | Caches, rate limits, short-lived session data, job coordination, and idempotency keys. It is never the sole record of a purchase or order. |
+| AI integration | Provider adapter with OpenRouter as the initial LLM access layer | Enables structured intent extraction and grounded summaries while preserving deterministic fallbacks and future model choice. Initial candidate model: `google/gemini-2.5-flash-lite`; backup candidate: `openai/gpt-4.1-mini` or current equivalent when stricter structured-output reliability is needed. Credentials, downstream model policy, provider terms, retention posture, and timeouts remain D-11 operational enablement work; spend caps are managed in OpenRouter. |
 | Async work | Database outbox + worker | Reliable event publishing without Kafka or a distributed event platform in the initial release. |
-| Payments and shipping | Simulated adapters | Enables an authentic checkout/order experience without handling regulated payment data or real carrier commitments. |
+| Payments and shipping | Simulated adapters | Enables an authentic checkout/order experience without handling regulated payment data or real carrier commitments. Initial commerce uses the confirmed D-04 US/USD simulation policy for tax, shipping, delivery, reservation, cancellation, returns/refunds, and P0 promotion fixtures. |
 
 ## 2. High-level topology
 
@@ -28,7 +29,7 @@ flowchart TB
     A --> PG[(PostgreSQL\nsource of truth)]
     A --> R[(Redis\ncache, rate limits, jobs)]
     A --> Q[(Qdrant\nsemantic retrieval)]
-    A --> L[LLM provider adapter\nGemini reference initial]
+    A --> L[LLM provider adapter\nOpenRouter initial access]
     A --> O[Object storage\nproduct/review media]
     A --> OB[Outbox table]
     OB --> WK[Worker processes]
@@ -37,7 +38,7 @@ flowchart TB
     WK --> AN[Analytics/event sink]
 ```
 
-The API and workers can run from the same codebase and deployment image initially. Their process roles are separate so queued work cannot degrade checkout or search traffic.
+The Next.js web app and Hono API deploy to Vercel as separate request/response surfaces. Current scope does not require WebSockets, SSE, or other long-lived backend connections; notification and order timelines can update through page loads, refresh, or polling until a future realtime ADR exists. Worker code remains in the same modular codebase, but outbox draining and other asynchronous duties must run through Vercel scheduled functions or another explicitly approved managed background-job mechanism rather than assuming a continuously running in-process server.
 
 ## 2.1 Baseline-first implementation rule
 
@@ -294,10 +295,10 @@ Initial performance targets:
 
 ## 10. Security and privacy
 
-- Use secure, HTTP-only session cookies or short-lived access tokens with refresh rotation; do not expose credentials to browser JavaScript.
+- Use Better Auth as the authentication foundation with credentials, Google OAuth, and database-backed opaque sessions. Session expiry is 7 days with 1-day rolling refresh. Cookies are HTTP-only, secure, and SameSite=Lax. Verification and password-reset tokens are single-use and expire after 15 minutes. Do not expose credentials to browser JavaScript.
 - Apply role/ownership authorization to every account, cart, order, address, review, and return resource.
 - Never store real card numbers, CVVs, or bank credentials. The payment module persists opaque mock tokens only.
-- Encrypt secrets in the deployment environment; rotate provider credentials.
+- Keep provider configuration environment-driven. Validate required production environment variables at startup; never invent deployed credentials, regions, domains, or unsafe production defaults. Encrypt secrets in the deployment environment; rotate provider credentials.
 - Validate and size-limit all user input and media uploads; use signed object-storage upload URLs.
 - Rate limit authentication, search suggestions, support, review creation, and AI endpoints.
 - Treat model output as untrusted. Validate structured output, escape rendered text, and prohibit model-generated policy or price decisions.
@@ -327,19 +328,19 @@ Initial performance targets:
 ## 12. Deployment
 
 ```text
-CDN / edge
+Vercel CDN / edge
   → Next.js web deployment
-  → API deployment (horizontally scalable)
-  → worker deployment
+  → Hono API deployment on Vercel request/response functions
+  → scheduled or managed outbox/background execution
 
-Managed PostgreSQL
-Managed Redis
-Managed Qdrant
+Neon PostgreSQL
+Upstash Redis
+Qdrant Cloud
 Object storage + CDN
 Secrets manager / environment configuration
 ```
 
-Use separate staging and production environments, migration gates before API deployment, health/readiness checks, database backups, and a rollback plan. Seed data is environment-specific and clearly marked as simulated.
+Use pnpm workspaces for the TypeScript monorepo, TypeScript strict mode, Drizzle ORM, and committed SQL migrations. U0/local implementation is not blocked on final deployment topology, API keys, regions, Vercel runtime limits, cron cadence, production origins, or Google OAuth production callback configuration. Those are pre-staging/production deployment gates. Use separate staging and production environments, migration gates before API deployment, health/readiness checks, database backups, and a rollback plan. Seed data is environment-specific and clearly marked as simulated. Production email provider, verified sender domain, deliverability configuration, Vercel function runtime limits, cron cadence, region selection, and operational ownership must be documented before production launch.
 
 ## 13. Suggested repository layout
 
