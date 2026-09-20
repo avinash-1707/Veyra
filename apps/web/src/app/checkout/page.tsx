@@ -6,7 +6,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { CatalogUnavailable } from "../page";
-import { formatInr, getCart } from "../lib/catalog";
+import { getCart } from "@/lib/api/server/commerce";
+import { formatInr } from "@/lib/currency";
 
 export const dynamic = "force-dynamic";
 

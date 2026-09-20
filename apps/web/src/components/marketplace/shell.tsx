@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { FiShoppingCart } from "react-icons/fi";
 
+import { getShopperSession } from "@/app/lib/session";
+
+import { AccountMenu } from "./account-menu";
 import { NavbarSearch } from "./navbar-search";
 
 const footerLinks = [
@@ -9,7 +12,7 @@ const footerLinks = [
   { href: "/intelligent-search", label: "AI guidance policy" }
 ] as const;
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export async function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="site-shell">
       <a className="skip-link" href="#main-content">
@@ -24,7 +27,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const shopper = await getShopperSession();
+
   return (
     <header className="site-header">
       <nav className="site-nav" aria-label="Primary navigation">
@@ -33,7 +38,18 @@ export function SiteHeader() {
         </Link>
         <NavbarSearch />
         <div className="nav-actions">
-          <Link href="/orders">Orders</Link>
+          {shopper ? (
+            <AccountMenu shopper={shopper.user} />
+          ) : (
+            <div className="auth-actions">
+              <Link className="login-link" href="/login">
+                Log in
+              </Link>
+              <Link className="signup-link" href="/signup">
+                Sign up
+              </Link>
+            </div>
+          )}
           <Link className="guided-search-link" href="/intelligent-search">
             <span aria-hidden="true">✨</span>
             Guided Search

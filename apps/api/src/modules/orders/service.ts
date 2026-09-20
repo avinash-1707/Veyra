@@ -79,7 +79,7 @@ export async function createCheckoutQuote(
   shopperId: string,
   command: CheckoutQuoteCommand
 ): Promise<CommandResult<CheckoutQuote>> {
-  const cartId = command.cartId ?? "local-guest-cart";
+  const cartId = cartIdForShopper(shopperId);
   const cart = await readCart(cartId);
   const cartItems = cart.items.filter((item) => item.availabilityStatus === "ok");
   if (cartItems.length === 0) return { status: "validation", message: "Add an available item before checkout." };
@@ -410,6 +410,10 @@ function appendOrderEvent(order: Order, at: string, status: string, message: str
 
 function isRecordObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function cartIdForShopper(shopperId: string): string {
+  return `shopper:${shopperId}`;
 }
 
 function stableFingerprint(value: unknown): string {

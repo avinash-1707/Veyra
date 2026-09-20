@@ -20,7 +20,8 @@
     "@neondatabase/serverless": "^1.1.0",
     "@veyra/config": "workspace:*",
     "@veyra/contracts": "workspace:*",
-    "better-auth": "^1.7.5",
+    "@veyra/db": "workspace:*",
+    "better-auth": "1.7.5",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.13.8",
     "nodemailer": "^10.0.10"

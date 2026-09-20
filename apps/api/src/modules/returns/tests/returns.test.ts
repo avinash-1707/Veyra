@@ -9,12 +9,14 @@ import {
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { app } from "../../../index.js";
+import { authenticatedShopperHeaders, authenticatedShopperId } from "../../../tests/auth.js";
 import { resetCartsForTests } from "../../cart/cart.js";
 import { expireDeliveredOrderForTests, resetOrdersForTests } from "../../orders/orders.js";
 import { advanceReturnForTests, resetReturnsForTests } from "../returns.js";
 import { resetLocalRateLimitsForTests } from "../../../platform/http.js";
 
-const shopperId = "shopper-unit-4";
+let authenticatedHeaders: Record<string, string>;
+let shopperId: string;
 const cartId = "unit-4-cart";
 const offerId = "018f3f7d-486c-7d73-9e13-83d8d0c75614";
 const variantId = "018f3f7d-486c-7d73-9e13-83d8d0c75612";
@@ -27,11 +29,13 @@ const address = {
 };
 
 describe("returns, reviews, and deterministic support API", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     resetLocalRateLimitsForTests();
     resetCartsForTests();
     resetOrdersForTests();
     resetReturnsForTests();
+    authenticatedHeaders = await authenticatedShopperHeaders();
+    shopperId = await authenticatedShopperId(authenticatedHeaders);
   });
 
   it("accepts one delivered-item return and advances its simulated refund timeline", async () => {
@@ -84,11 +88,11 @@ describe("returns, reviews, and deterministic support API", () => {
       headers: { ...headers(), "content-type": "application/json" },
       body: JSON.stringify({ orderId: pending.id, lineId, rating: 5, title: "Great", body: "Works well." })
     });
-    const crossShopper = await app.request(`/v1/orders/${pending.id}/items/${lineId}/return-eligibility`, {
+    const forgedHeader = await app.request(`/v1/orders/${pending.id}/items/${lineId}/return-eligibility`, {
       headers: { ...headers(), "x-veyra-shopper-id": "other-shopper" }
     });
     expect(review.status).toBe(409);
-    expect(crossShopper.status).toBe(404);
+    expect(forgedHeader.status).toBe(200);
 
     const delivered = await deliver(pending.id);
     const submitted = await app.request("/v1/reviews", {
@@ -176,10 +180,5 @@ async function createOrder() {
   return orderResponseSchema.parse((await confirmed.json()) as unknown).data;
 }
 function headers() {
-  return {
-    "x-veyra-shopper-id": shopperId,
-    origin: "http://localhost:3000",
-    cookie: "veyra_csrf=csrf-token",
-    "x-csrf-token": "csrf-token"
-  };
+  return authenticatedHeaders;
 }

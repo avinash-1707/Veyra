@@ -6,7 +6,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { CatalogUnavailable } from "../../../../page";
-import { getReturnRequest } from "../../../../lib/catalog";
+import { getReturnRequest } from "@/lib/api/server/returns";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +38,8 @@ export default async function ReturnDetailPage(props: { params: Promise<{ orderI
             <p className="eyebrow">Simulated return</p>
             <h1>Return {request.id.slice(0, 8)}.</h1>
             <p className="max-w-2xl text-base leading-7 text-muted-foreground">
-              Refund only returns move through requested, received, approved, and refunded states in the prototype workflow.
+              Refund only returns move through requested, received, approved, and refunded states in the prototype
+              workflow.
             </p>
           </div>
           <Badge variant={request.state === "rejected" || request.state === "cancelled" ? "destructive" : "secondary"}>

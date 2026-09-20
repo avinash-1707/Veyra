@@ -2,20 +2,22 @@ import { getTableName } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import { describe, expect, it } from "vitest";
 
-import { outboxEvents, products, sessions, users } from "./schema.js";
+import { account, outboxEvents, products, session, user, verification } from "./schema.js";
 
 describe("Drizzle U0 schema", () => {
   it("exports tables from the identity, catalog, and platform domain schemas", () => {
-    expect(getTableName(users)).toBe("users");
-    expect(getTableName(sessions)).toBe("sessions");
+    expect(getTableName(user)).toBe("user");
+    expect(getTableName(session)).toBe("session");
+    expect(getTableName(account)).toBe("account");
+    expect(getTableName(verification)).toBe("verification");
     expect(getTableName(products)).toBe("products");
     expect(getTableName(outboxEvents)).toBe("outbox_events");
   });
 
   it("declares session lifecycle indexes and preserves the ordered outbox work index", () => {
-    expect(getTableConfig(sessions).indexes.map((entry) => entry.config.name)).toEqual([
-      "sessions_user_id_idx",
-      "sessions_expires_at_idx"
+    expect(getTableConfig(session).indexes.map((entry) => entry.config.name)).toEqual([
+      "session_user_id_idx",
+      "session_expires_at_idx"
     ]);
     expect(getTableConfig(outboxEvents).indexes.map((entry) => entry.config.name)).toEqual([
       "outbox_events_state_created_at_idx"

@@ -28,6 +28,57 @@ describe("auth and browser protection", () => {
     );
   });
 
+  it("emits credentialed CORS only for trusted browser origins", async () => {
+    const preflight = await app.request("/v1/search", {
+      method: "OPTIONS",
+      headers: { origin: "http://localhost:3000", "access-control-request-method": "GET" }
+    });
+
+    expect(preflight.status).toBe(204);
+    expect(preflight.headers.get("access-control-allow-origin")).toBe("http://localhost:3000");
+    expect(preflight.headers.get("access-control-allow-credentials")).toBe("true");
+
+    const rejected = await app.request("/v1/search", {
+      method: "OPTIONS",
+      headers: { origin: "https://evil.example" }
+    });
+    expect(rejected.status).toBe(403);
+  });
+
+  it("mounts Better Auth and resolves a verified session principal", async () => {
+    const forgedPrincipal = await app.request("/v1/orders", {
+      headers: { "x-veyra-shopper-id": "forged-shopper" }
+    });
+    expect(forgedPrincipal.status).toBe(403);
+
+    const email = `${crypto.randomUUID()}@example.test`;
+    const response = await app.request("/api/auth/sign-up/email", {
+      method: "POST",
+      headers: { origin: "http://localhost:3000", "content-type": "application/json" },
+      body: JSON.stringify({ name: "Test Shopper", email, password: "test-password" })
+    });
+    const sessionCookie = response.headers.get("set-cookie");
+    expect(response.status).toBe(200);
+    expect(sessionCookie).toContain("better-auth.session_token=");
+
+    const orders = await app.request("/v1/orders", { headers: { cookie: sessionCookie! } });
+    expect(orders.status).toBe(200);
+
+    const signedOut = await app.request("/api/auth/sign-out", {
+      method: "POST",
+      headers: { origin: "http://localhost:3000", cookie: sessionCookie! }
+    });
+    expect(signedOut.status).toBe(200);
+    expect((await app.request("/v1/orders", { headers: { cookie: sessionCookie! } })).status).toBe(403);
+
+    const signedIn = await app.request("/api/auth/sign-in/email", {
+      method: "POST",
+      headers: { origin: "http://localhost:3000", "content-type": "application/json" },
+      body: JSON.stringify({ email, password: "test-password" })
+    });
+    expect(signedIn.status).toBe(200);
+  });
+
   it("rejects mutating requests without trusted origin and matching csrf token", async () => {
     resetLocalRateLimitsForTests();
 
@@ -41,7 +92,7 @@ describe("auth and browser protection", () => {
     const allowedProtection = await app.request("/missing", {
       method: "POST",
       headers: {
-        origin: "http://localhost:3001",
+        origin: "http://localhost:8787",
         cookie: "veyra_csrf=token",
         "x-csrf-token": "token"
       }

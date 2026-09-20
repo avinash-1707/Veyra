@@ -11,7 +11,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 import { CatalogUnavailable } from "../page";
-import { formatInr, intelligentSearch } from "../lib/catalog";
+import { intelligentSearch } from "@/lib/api/server/intelligence";
+import { formatInr } from "@/lib/currency";
 
 export const dynamic = "force-dynamic";
 

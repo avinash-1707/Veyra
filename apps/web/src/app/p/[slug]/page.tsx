@@ -7,7 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
 import { CatalogUnavailable } from "../../page";
-import { formatInr, getEvaluation, getReviewGuidance } from "../../lib/catalog";
+import { getEvaluation } from "@/lib/api/server/discovery";
+import { getReviewGuidance } from "@/lib/api/server/intelligence";
+import { formatInr } from "@/lib/currency";
 
 export const dynamic = "force-dynamic";
 

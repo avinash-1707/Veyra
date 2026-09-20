@@ -1,5 +1,6 @@
 import { cartResponseSchema } from "@veyra/contracts";
 
+import { getVerifiedPrincipal } from "../modules/identity/auth.js";
 import { fail, type AppBindings } from "./http.js";
 
 type AppContext = Parameters<typeof fail>[0];
@@ -12,8 +13,17 @@ export function cartIdFromRequest(value: string | undefined): string {
   return value === undefined || value.trim().length === 0 ? "local-guest-cart" : value.trim().slice(0, 120);
 }
 
-export function shopperIdFromRequest(value: string | undefined): string {
-  return value === undefined || value.trim().length === 0 ? "local-shopper" : value.trim().slice(0, 120);
+export type VerifiedShopperResult =
+  { authenticated: true; shopperId: string } | { authenticated: false; response: Response };
+
+export async function requireVerifiedShopper(context: AppContext): Promise<VerifiedShopperResult> {
+  const principal = await getVerifiedPrincipal(context.req.raw.headers);
+  if (principal !== undefined) return { authenticated: true, shopperId: principal.shopperId };
+
+  return {
+    authenticated: false,
+    response: fail(context, 403, "forbidden", "Sign in to access shopper orders and returns.")
+  };
 }
 
 export async function cartMutationResponse(

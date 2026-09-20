@@ -7,7 +7,6 @@ import { moneySchema } from "./product.js";
 
 export const mockPaymentMethodSchema = z.enum(["mock_success", "mock_failure"]);
 export const checkoutQuoteCommandSchema = z.object({
-  cartId: z.string().min(1).max(120).optional(),
   shippingAddress: indianAddressSchema,
   deliverySpeed: deliverySpeedSchema.default("standard"),
   mockPaymentMethod: mockPaymentMethodSchema.default("mock_success")

@@ -1,7 +1,7 @@
 import type { AppEnvironment } from "@veyra/config";
 import { selectRouteLimitPolicy } from "@veyra/config";
 
-import { checkOrigin } from "../modules/identity/auth.js";
+import { checkOrigin, corsHeaders } from "../modules/identity/auth.js";
 import type { ApiErrorCode } from "@veyra/contracts";
 import type { Context, MiddlewareHandler } from "hono";
 
@@ -30,6 +30,27 @@ export const requestIdMiddleware: MiddlewareHandler<AppBindings> = async (contex
   await next();
 };
 
+export function corsMiddleware(environment: AppEnvironment): MiddlewareHandler<AppBindings> {
+  return async (context, next) => {
+    const origin = context.req.header("origin");
+    if (origin !== undefined) {
+      const headers = corsHeaders(origin, environment);
+      headers.forEach((value, name) => context.header(name, value));
+    }
+
+    if (context.req.method === "OPTIONS") {
+      const originCheck = checkOrigin(origin ?? null, environment);
+      if (!originCheck.allowed) return fail(context, 403, "forbidden", "Request origin is not allowed.");
+      context.header("access-control-allow-methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+      context.header("access-control-allow-headers", "content-type, idempotency-key, x-csrf-token, x-request-id");
+      context.header("access-control-max-age", "600");
+      return context.body(null, 204);
+    }
+
+    await next();
+  };
+}
+
 export const securityHeadersMiddleware: MiddlewareHandler<AppBindings> = async (context, next) => {
   context.header("content-security-policy", "default-src 'none'; frame-ancestors 'none'");
   context.header("referrer-policy", "no-referrer");
@@ -53,7 +74,11 @@ function cookieValue(cookieHeader: string | undefined, name: string): string | u
 }
 
 function isCookieAuthenticatedMutation(method: string, pathname: string): boolean {
-  return ["POST", "PUT", "PATCH", "DELETE"].includes(method) && pathname !== "/v1/delivery/estimate";
+  return (
+    ["POST", "PUT", "PATCH", "DELETE"].includes(method) &&
+    pathname !== "/v1/delivery/estimate" &&
+    !pathname.startsWith("/api/auth/")
+  );
 }
 
 export function browserProtectionMiddleware(environment: AppEnvironment): MiddlewareHandler<AppBindings> {

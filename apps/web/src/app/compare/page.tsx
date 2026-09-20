@@ -7,7 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 import { CatalogUnavailable } from "../page";
-import { compareCatalog, formatInr, getComparisonGuidance } from "../lib/catalog";
+import { compareCatalog } from "@/lib/api/server/discovery";
+import { getComparisonGuidance } from "@/lib/api/server/intelligence";
+import { formatInr } from "@/lib/currency";
 
 export const dynamic = "force-dynamic";
 

@@ -1,68 +1,40 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FiSearch } from "react-icons/fi";
 
-type SearchSuggestion = {
-  type: "query" | "category";
-  value: string;
-};
+import type { SearchSuggestion } from "../../lib/api/types";
+import { searchSuggestionsQueryOptions } from "../../lib/queries/discovery";
 
-type SuggestionsResponse = {
-  suggestions: SearchSuggestion[];
-};
+const emptySuggestions: SearchSuggestion[] = [];
 
 export function NavbarSearch() {
   const router = useRouter();
   const listboxId = useId();
   const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
-  const requestId = useRef(0);
+  const suggestionQuery = useQuery(searchSuggestionsQueryOptions(debouncedQuery));
+  const suggestions = suggestionQuery.data ?? emptySuggestions;
 
   useEffect(() => {
-    const currentRequestId = ++requestId.current;
-    const trimmedQuery = query.trim();
-    if (trimmedQuery.length === 0) {
-      setSuggestions([]);
+    const timeout = window.setTimeout(() => setDebouncedQuery(query.trim()), 250);
+    return () => window.clearTimeout(timeout);
+  }, [query]);
+
+  useEffect(() => {
+    if (debouncedQuery.length === 0 || suggestionQuery.isError) {
       setIsOpen(false);
       setActiveIndex(-1);
       return;
     }
 
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => {
-      void fetch(`/api/search/suggestions?q=${encodeURIComponent(trimmedQuery)}`, { signal: controller.signal })
-        .then(async (response) => {
-          if (!response.ok) throw new Error("Suggestions unavailable");
-          return (await response.json()) as SuggestionsResponse;
-        })
-        .then((response) => {
-          if (controller.signal.aborted || currentRequestId !== requestId.current) return;
-          setSuggestions(response.suggestions);
-          setIsOpen(response.suggestions.length > 0);
-          setActiveIndex(-1);
-        })
-        .catch((error: unknown) => {
-          if (
-            controller.signal.aborted ||
-            currentRequestId !== requestId.current ||
-            (error instanceof DOMException && error.name === "AbortError")
-          )
-            return;
-          setSuggestions([]);
-          setIsOpen(false);
-          setActiveIndex(-1);
-        });
-    }, 250);
-
-    return () => {
-      window.clearTimeout(timeout);
-      controller.abort();
-    };
-  }, [query]);
+    setIsOpen(suggestions.length > 0);
+    setActiveIndex(-1);
+  }, [debouncedQuery, suggestionQuery.isError, suggestions]);
 
   const navigateToSuggestion = (suggestion: SearchSuggestion) => {
     router.push(`/intelligent-search?q=${encodeURIComponent(suggestion.value)}`);

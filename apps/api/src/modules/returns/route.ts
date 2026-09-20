@@ -13,7 +13,7 @@ import { Hono } from "hono";
 
 import { fail, type AppBindings } from "../../platform/http.js";
 import { paginateByCursor, parsePagination } from "../../platform/pagination.js";
-import { commandFailureResponse, shopperIdFromRequest } from "../../platform/routeHelpers.js";
+import { commandFailureResponse, requireVerifiedShopper } from "../../platform/routeHelpers.js";
 import {
   confirmSupportProposal,
   createReturn,
@@ -27,10 +27,9 @@ import {
 export const returnRoutes = new Hono<AppBindings>();
 
 returnRoutes.get("/v1/orders/:orderId/returns", async (context) => {
-  const requests = await listReturns(
-    shopperIdFromRequest(context.req.header("x-veyra-shopper-id")),
-    context.req.param("orderId")
-  );
+  const shopper = await requireVerifiedShopper(context);
+  if (!shopper.authenticated) return shopper.response;
+  const requests = await listReturns(shopper.shopperId, context.req.param("orderId"));
   return context.json(
     returnListResponseSchema.parse({
       apiVersion: "v1",
@@ -45,8 +44,10 @@ returnRoutes.get("/v1/orders/:orderId/returns", async (context) => {
 });
 
 returnRoutes.get("/v1/orders/:orderId/items/:lineId/return-eligibility", async (context) => {
+  const shopper = await requireVerifiedShopper(context);
+  if (!shopper.authenticated) return shopper.response;
   const result = await getReturnEligibility(
-    shopperIdFromRequest(context.req.header("x-veyra-shopper-id")),
+    shopper.shopperId,
     context.req.param("orderId"),
     context.req.param("lineId")
   );
@@ -57,11 +58,13 @@ returnRoutes.get("/v1/orders/:orderId/items/:lineId/return-eligibility", async (
 });
 
 returnRoutes.post("/v1/returns", async (context) => {
+  const shopper = await requireVerifiedShopper(context);
+  if (!shopper.authenticated) return shopper.response;
   const payload = createReturnCommandSchema.safeParse(await context.req.json<unknown>());
   if (!payload.success)
     return fail(context, 400, "validation_error", "Choose a valid delivered item and return reason.");
   const result = await createReturn(
-    shopperIdFromRequest(context.req.header("x-veyra-shopper-id")),
+    shopper.shopperId,
     payload.data,
     context.req.header("idempotency-key"),
     context.get("requestId")
@@ -73,10 +76,9 @@ returnRoutes.post("/v1/returns", async (context) => {
 });
 
 returnRoutes.get("/v1/returns/:returnId", async (context) => {
-  const result = await getReturn(
-    shopperIdFromRequest(context.req.header("x-veyra-shopper-id")),
-    context.req.param("returnId")
-  );
+  const shopper = await requireVerifiedShopper(context);
+  if (!shopper.authenticated) return shopper.response;
+  const result = await getReturn(shopper.shopperId, context.req.param("returnId"));
   if (result.status !== "ok") return commandFailureResponse(context, result);
   return context.json(
     returnResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data })
@@ -84,14 +86,12 @@ returnRoutes.get("/v1/returns/:returnId", async (context) => {
 });
 
 returnRoutes.post("/v1/reviews", async (context) => {
+  const shopper = await requireVerifiedShopper(context);
+  if (!shopper.authenticated) return shopper.response;
   const payload = reviewSubmissionSchema.safeParse(await context.req.json<unknown>());
   if (!payload.success)
     return fail(context, 400, "validation_error", "Enter a rating, title, and review within the supported limits.");
-  const result = await submitReview(
-    shopperIdFromRequest(context.req.header("x-veyra-shopper-id")),
-    payload.data,
-    context.req.header("idempotency-key")
-  );
+  const result = await submitReview(shopper.shopperId, payload.data, context.req.header("idempotency-key"));
   if (result.status !== "ok") return commandFailureResponse(context, result);
   return context.json(
     reviewResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data })
@@ -99,13 +99,12 @@ returnRoutes.post("/v1/reviews", async (context) => {
 });
 
 returnRoutes.post("/v1/support/proposals", async (context) => {
+  const shopper = await requireVerifiedShopper(context);
+  if (!shopper.authenticated) return shopper.response;
   const payload = supportProposalCommandSchema.safeParse(await context.req.json<unknown>());
   if (!payload.success)
     return fail(context, 400, "validation_error", "Enter a supported help action and its required context.");
-  const result = await createSupportProposal(
-    shopperIdFromRequest(context.req.header("x-veyra-shopper-id")),
-    payload.data
-  );
+  const result = await createSupportProposal(shopper.shopperId, payload.data);
   if (result.status !== "ok") return commandFailureResponse(context, result);
   return context.json(
     supportProposalResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data })
@@ -113,8 +112,10 @@ returnRoutes.post("/v1/support/proposals", async (context) => {
 });
 
 returnRoutes.post("/v1/support/proposals/:proposalId/confirm", async (context) => {
+  const shopper = await requireVerifiedShopper(context);
+  if (!shopper.authenticated) return shopper.response;
   const result = await confirmSupportProposal(
-    shopperIdFromRequest(context.req.header("x-veyra-shopper-id")),
+    shopper.shopperId,
     context.req.param("proposalId"),
     context.req.header("idempotency-key"),
     context.get("requestId")

@@ -4,10 +4,10 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { resetCartsForTests } from "../../cart/cart.js";
 import { resetLocalRateLimitsForTests } from "../../../platform/http.js";
 import { app } from "../../../index.js";
+import { authenticatedShopperHeaders } from "../../../tests/auth.js";
 import { expireQuoteForTests, resetOrdersForTests } from "../orders.js";
 
-const cartId = "unit-3-cart";
-const shopperId = "shopper-unit-3";
+let authenticatedHeaders: Record<string, string>;
 const backpackOfferId = "018f3f7d-486c-7d73-9e13-83d8d0c75614";
 const backpackVariantId = "018f3f7d-486c-7d73-9e13-83d8d0c75612";
 const address = {
@@ -19,10 +19,11 @@ const address = {
 };
 
 describe("checkout and order lifecycle API", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     resetLocalRateLimitsForTests();
     resetCartsForTests();
     resetOrdersForTests();
+    authenticatedHeaders = await authenticatedShopperHeaders();
   });
 
   it("quotes and confirms one idempotent checkout with audit and outbox evidence", async () => {
@@ -115,15 +116,15 @@ describe("checkout and order lifecycle API", () => {
     expect(cancelAfterShip.status).toBe(409);
   });
 
-  it("does not disclose another shopper's order", async () => {
+  it("ignores a forged shopper header when reading the verified shopper's order", async () => {
     await addCartItem(1, "cart-add");
     const quote = await createQuote("mock_success");
     const order = await confirmQuote(quote.id, "confirm-owner");
-    const otherShopper = await app.request(`/v1/orders/${order.id}`, {
-      headers: { "x-veyra-shopper-id": "other-shopper" }
+    const response = await app.request(`/v1/orders/${order.id}`, {
+      headers: { ...shopperHeaders(), "x-veyra-shopper-id": "other-shopper" }
     });
 
-    expect(otherShopper.status).toBe(404);
+    expect(response.status).toBe(200);
   });
 });
 
@@ -132,7 +133,6 @@ async function addCartItem(quantity: number, idempotencyKey: string): Promise<vo
     method: "POST",
     headers: {
       ...shopperHeaders(),
-      "x-veyra-cart-id": cartId,
       "content-type": "application/json",
       "idempotency-key": idempotencyKey
     },
@@ -145,7 +145,7 @@ async function createQuote(mockPaymentMethod: "mock_success" | "mock_failure") {
   const response = await app.request("/v1/checkout/quote", {
     method: "POST",
     headers: { ...shopperHeaders(), "content-type": "application/json" },
-    body: JSON.stringify({ cartId, shippingAddress: address, deliverySpeed: "standard", mockPaymentMethod })
+    body: JSON.stringify({ shippingAddress: address, deliverySpeed: "standard", mockPaymentMethod })
   });
   const body: unknown = await response.json();
   expect(response.status).toBe(200);
@@ -164,10 +164,5 @@ async function confirmQuote(quoteId: string, idempotencyKey: string) {
 }
 
 function shopperHeaders() {
-  return {
-    "x-veyra-shopper-id": shopperId,
-    origin: "http://localhost:3000",
-    cookie: "veyra_csrf=csrf-token",
-    "x-csrf-token": "csrf-token"
-  };
+  return authenticatedHeaders;
 }

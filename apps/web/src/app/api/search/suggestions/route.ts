@@ -1,4 +1,4 @@
-import { getSearchSuggestions } from "@/app/lib/catalog";
+import { getSearchSuggestions } from "@/lib/api/server/discovery";
 
 const maxQueryLength = 200;
 

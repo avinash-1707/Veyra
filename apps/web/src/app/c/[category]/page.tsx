@@ -3,7 +3,7 @@ import Link from "next/link";
 import { SectionShell, StatePanel } from "@/components/marketplace";
 
 import { CatalogUnavailable, ProductList } from "../../page";
-import { searchCatalog } from "../../lib/catalog";
+import { searchCatalog } from "@/lib/api/server/discovery";
 
 export const dynamic = "force-dynamic";
 

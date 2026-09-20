@@ -4,7 +4,8 @@ import { ProductCard, SectionShell, StatePanel } from "@/components/marketplace"
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-import { formatInr, getCategories, searchCatalog } from "./lib/catalog";
+import { formatInr } from "@/lib/currency";
+import { getCategories, searchCatalog } from "@/lib/api/server/discovery";
 
 export const dynamic = "force-dynamic";
 

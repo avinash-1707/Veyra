@@ -6,7 +6,9 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { CatalogUnavailable } from "../../page";
-import { formatInr, getOrder, getOrderReturns } from "../../lib/catalog";
+import { getOrder } from "@/lib/api/server/orders";
+import { getOrderReturns } from "@/lib/api/server/returns";
+import { formatInr } from "@/lib/currency";
 
 export const dynamic = "force-dynamic";
 
@@ -28,10 +30,26 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderId
   const returns = await getOrderReturns(orderId).catch(() => []);
 
   const totalRows = [
-    { label: "Subtotal", value: formatInr(order.totals.itemSubtotal.amountMinor), helper: "Snapshot captured at confirmation" },
-    { label: "Discount", value: formatInr(order.totals.discountTotal.amountMinor), helper: "Server applied promotion total" },
-    { label: "Delivery", value: formatInr(order.totals.shipping.amountMinor), helper: `${order.deliverySpeed} simulated delivery` },
-    { label: "Estimated GST", value: formatInr(order.totals.estimatedTax.amountMinor), helper: "India INR tax estimate" }
+    {
+      label: "Subtotal",
+      value: formatInr(order.totals.itemSubtotal.amountMinor),
+      helper: "Snapshot captured at confirmation"
+    },
+    {
+      label: "Discount",
+      value: formatInr(order.totals.discountTotal.amountMinor),
+      helper: "Server applied promotion total"
+    },
+    {
+      label: "Delivery",
+      value: formatInr(order.totals.shipping.amountMinor),
+      helper: `${order.deliverySpeed} simulated delivery`
+    },
+    {
+      label: "Estimated GST",
+      value: formatInr(order.totals.estimatedTax.amountMinor),
+      helper: "India INR tax estimate"
+    }
   ] as const;
 
   return (
@@ -114,7 +132,11 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderId
           >
             <div className="grid gap-4">
               <StatePanel
-                title={order.status === "delivered" ? "Delivered order actions are available" : "Return eligibility starts after delivery"}
+                title={
+                  order.status === "delivered"
+                    ? "Delivered order actions are available"
+                    : "Return eligibility starts after delivery"
+                }
                 description={
                   order.status === "delivered"
                     ? "Delivered items can receive one verified review or a simulated refund return within 30 days."
@@ -128,8 +150,14 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderId
               ) : (
                 <ul className="grid gap-3" aria-label="Return requests">
                   {returns.map((request) => (
-                    <li key={request.id} className="rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
-                      <Link className="font-semibold text-foreground no-underline" href={`/orders/${order.id}/returns/${request.id}`}>
+                    <li
+                      key={request.id}
+                      className="rounded-xl border border-border bg-card p-4 shadow-[var(--shadow-card)]"
+                    >
+                      <Link
+                        className="font-semibold text-foreground no-underline"
+                        href={`/orders/${order.id}/returns/${request.id}`}
+                      >
                         Return {request.id.slice(0, 8)}
                       </Link>
                       <p className="mt-1 text-sm text-muted-foreground">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { SectionShell, StatePanel } from "@/components/marketplace";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +7,9 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { CatalogUnavailable } from "../page";
-import { formatInr, getOrders } from "../lib/catalog";
+import { getOrders } from "@/lib/api/server/orders";
+import { formatInr } from "@/lib/currency";
+import { getShopperSession } from "../lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +22,7 @@ const orderStatusLabel: Record<string, string> = {
 };
 
 export default async function OrdersPage() {
+  if (!(await getShopperSession())) redirect("/login");
   const orders = await getOrders().catch(() => undefined);
   if (orders === undefined) return <CatalogUnavailable />;
 
@@ -68,8 +72,12 @@ export default async function OrdersPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="grid gap-3 text-sm text-muted-foreground">
-                    <p className="text-2xl font-semibold text-foreground">{formatInr(order.totals.grandTotal.amountMinor)}</p>
-                    <p>{order.items.length} item{order.items.length === 1 ? "" : "s"}</p>
+                    <p className="text-2xl font-semibold text-foreground">
+                      {formatInr(order.totals.grandTotal.amountMinor)}
+                    </p>
+                    <p>
+                      {order.items.length} item{order.items.length === 1 ? "" : "s"}
+                    </p>
                     <p>Placed {new Date(order.createdAt).toLocaleString("en-IN")}</p>
                     <p>Delivery speed: {order.deliverySpeed}</p>
                   </CardContent>
