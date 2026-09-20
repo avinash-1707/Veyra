@@ -52,3 +52,7 @@ Veyra is an AI-native consumer marketplace: it first delivers conventional Amazo
 Update [progress](docs/progress-tracker.md) for every implementation, deviation, gap, or decision resolution. A resolved `D-##` requires four synchronized changes: the progress log, matching ADR, [build-plan coverage row](docs/specs/03_build_plan.md#master-decision-coverage-table), and the original assumption/open question. Create an ADR before a new material design judgment. Record material deviations before treating them as the new specification. Promote a deferral only after its named evidence trigger is met.
 
 pnpm is selected as the package manager, but no package configuration, build command, test command, or runtime command is established in this repository yet.
+
+## Test File Organization
+
+When a source folder or any one of its subfolders contains more than one `*.test.ts` file, place those test files in a dedicated `tests/` folder under that source folder and update relative imports. A single nearby test file may stay next to the source file until a second test file is added in that folder scope.

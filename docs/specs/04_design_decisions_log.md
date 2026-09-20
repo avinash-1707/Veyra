@@ -12,7 +12,7 @@ Current-state specs describe behavior; this log records material alternatives, t
 **Confirmed by owner** = source documents explicitly decide it. **Proposed/adopted** = implementation-ready recommendation accepted by owner. **Assumption/open** = must resolve before named work. **Superseded** = replaced by a successor ADR.
 
 ## Open items requiring explicit resolution
-D-02 deployment operations details; D-03 API/auth/email hardening details; D-04 commerce-policy boundary; D-05–D-10 pre-build security and operational controls; D-11 AI provider operational enablement.
+D-02 deployment operations details; D-03 API/auth/email production hardening details; D-11 AI provider operational enablement.
 
 ## Product and architecture ADRs
 
@@ -84,14 +84,14 @@ D-02 deployment operations details; D-03 API/auth/email hardening details; D-04 
 **Revisit trigger:** none without product-security approval.
 
 ### ADR-008 — Pre-build security and operational controls
-**Status:** Assumption/open · **D-ID:** D-05, D-06, D-07, D-08, D-09, D-10  
+**Status:** Proposed/adopted · **D-ID:** D-05, D-06, D-07, D-08, D-09, D-10  
 **Context:** The reference architecture establishes secure patterns but not the concrete policies needed to safely expose an identity-bearing consumer application.  
-**Alternatives considered:** defer policies to individual feature teams; define a common U0 security/operations baseline before feature work.  
-**Decision:** U0 must establish and test one common baseline before public/authenticated endpoints, uploads, privileged operations, production data collection, or launch. It covers identity/session/browser protections (D-05), abuse and endpoint/AI timeout controls (D-06), privacy and provider-data lifecycle (D-07), internal roles (D-08), media safety (D-09), and recovery/on-call operations (D-10). App-level AI spend caps are not required because budget is managed in OpenRouter. D-05 has an initial implementation contract: Better Auth database-backed opaque sessions, 7-day expiry, 1-day rolling refresh, HTTP-only secure SameSite=Lax cookies, central CSRF/origin/CORS/CSP enforcement, 15-minute single-use verification/reset tokens, and non-enumerating auth responses.  
-**Rationale:** these boundaries cross every later domain; retrofitting them after carts, orders, or uploads exist is unsafe and expensive.  
-**Consequences:** D-05 is specific enough for U0/local identity implementation; D-06–D-10 and production hardening values remain open, but no implementation may silently select them. U0 exit evidence includes adversarial and recovery-path tests.  
+**Alternatives considered:** defer policies to individual feature teams; define a common U0 security/operations baseline before feature work; block all local implementation until production vendors and runbooks are final.  
+**Decision:** U0 establishes and tests one common local/prototype baseline before public/authenticated endpoints, uploads, privileged operations, production data collection, or launch. D-05 uses Better Auth database-backed opaque sessions, 7-day expiry, 1-day rolling refresh, HTTP-only secure SameSite=Lax cookies, central CSRF/origin/CORS/CSP enforcement, 15-minute single-use verification/reset tokens, and non-enumerating auth responses. D-06 defines route-group limits, body/pagination ceilings, endpoint deadlines, AI timeout/fallback, sensitive-endpoint fail-closed behavior on limiter failure, and fraud-signal logging; app-level AI spend caps are not required because budget is managed in OpenRouter. D-07 defines a data classification and retention baseline: account/order records are retained for product operation and audit, behavior analytics use pseudonymous identifiers with a 180-day default retention, provider data is minimized and prohibited from AI unless purpose-approved, and production export/deletion/incident procedures remain pre-production gates. D-08 defines default-deny operator roles for catalog publication, review moderation, support, dead-letter replay, migration execution, and audit-log access; every privileged action needs operator attribution and immutable audit intent. D-09 defines media quarantine before publication with allowlisted MIME/magic validation, size ceilings, malware-scan/moderation status, metadata stripping where exposed, and signed URL isolation. D-10 defines local recovery policy fixtures: daily production backup target, 24-hour RPO, 4-hour RTO target, quarterly restore test, forward-fix migration preference, authorized dead-letter replay with audit, and pre-launch on-call/alert ownership gates.  
+**Rationale:** these boundaries cross every later domain; retrofitting them after carts, orders, or uploads exist is unsafe and expensive. Local/prototype constants let implementation and tests move without pretending that production vendors, regions, or staffing are final.  
+**Consequences:** D-05–D-10 are sufficient for U0 local implementation and test fixtures. Production/staging still require concrete provider credentials, origins, backup storage, alert destinations, staffing, incident contacts, and email/OAuth deliverability before launch. U0 exit evidence includes adversarial and recovery-path tests over these policy fixtures.  
 **Doc references:** [security gates](02_system_architecture_spec.md#pre-build-security-and-abuse-controls), [build plan](03_build_plan.md#master-decision-coverage-table).  
-**Revisit trigger:** each D-ID is replaced with a dedicated confirmed ADR when its policy is selected; the common baseline remains required.
+**Revisit trigger:** before public/staging exposure, media uploads, operational tooling, production data collection, or production launch if provider or staffing constraints require different values.
 
 ### ADR-009 — Direct customer self-service is P0
 **Status:** Confirmed by owner  

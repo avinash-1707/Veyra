@@ -1,5 +1,5 @@
 {
-  "name": "@veyra/api",
+  "name": "@veyra/config",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -13,8 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@veyra/config": "workspace:*",
-    "@veyra/contracts": "workspace:*",
-    "hono": "^4.13.8"
-  }
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {}
 }

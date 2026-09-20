@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { apiSuccessSchema } from "./api.js";
+
 export const moneySchema = z.object({
   currency: z.literal("USD"),
   amountMinor: z.number().int().nonnegative()
@@ -15,10 +17,7 @@ export const productSeedSchema = z.object({
   availableQuantity: z.number().int().nonnegative()
 });
 
-export const productSeedListResponseSchema = z.object({
-  apiVersion: z.literal("v1"),
-  data: z.array(productSeedSchema)
-});
+export const productSeedListResponseSchema = apiSuccessSchema(z.array(productSeedSchema));
 
 export type Money = z.infer<typeof moneySchema>;
 export type ProductSeed = z.infer<typeof productSeedSchema>;

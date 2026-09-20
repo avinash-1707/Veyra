@@ -55,7 +55,7 @@ Structured redacted logs; request/trace IDs across web/API/outbox/workers; laten
 Deploy the Next.js web app and Hono API on Vercel with separate web/API surfaces; keep worker/outbox duties on Vercel native scheduled/background services where suitable. Neon PostgreSQL, Upstash Redis, Qdrant Cloud, storage/CDN, and secrets manager are the target shape. Configuration is environment-driven; production startup validates required environment variables rather than allowing missing credentials or unsafe defaults. Environments, committed SQL migrations, health/readiness checks, backups, and rollback are required. **[Assumption] D-02:** Vercel, Neon, Upstash, and Qdrant Cloud are selected. Final regions, function runtime limits, scheduled/background execution details, SLO ownership, and incident runbooks are pre-staging/production deployment gates, not U0/local implementation blockers.
 
 ## Assumptions / decisions to validate
-D-02 deployment operations gates; D-03 Hono/Drizzle/Better Auth/Nodemailer implementation details; D-04 commerce policy; D-05–D-10 pre-build security/operational controls; and D-11 OpenRouter operational enablement. See [build plan](03_build_plan.md#master-decision-coverage-table).
+D-02 deployment operations gates; D-03 Hono/Drizzle/Better Auth/Nodemailer production hardening details; D-04 commerce policy fixtures for shopper flows; D-05–D-10 local/prototype security and operational controls are adopted in ADR-008 with production exposure gates; and D-11 OpenRouter operational enablement remains open. See [build plan](03_build_plan.md#master-decision-coverage-table).
 
 ## Ownership and write rules
 | Module | Owns writes to | May read through |
@@ -123,7 +123,7 @@ AI cannot issue database queries, select a final offer, change a quote, alter a 
 - Define data classification, retention, deletion/export behavior, and incident response before collecting production personal or behavioral data.
 
 ## Pre-build security and abuse controls
-The following are release gates, not implementation suggestions. Their concrete configuration is owned by D-05 through D-10 in the [build plan](03_build_plan.md#master-decision-coverage-table).
+The following are release gates, not implementation suggestions. Their local/prototype configuration is adopted by D-05 through D-10 in the [build plan](03_build_plan.md#master-decision-coverage-table); production provider values and staffing remain pre-production gates.
 
 ### Identity, sessions, and browser protection
 - Before account creation, select a password hashing algorithm and parameters (Argon2id is the required baseline unless a documented ADR justifies an equivalent); never log, reversibly encrypt, or reuse passwords.

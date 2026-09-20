@@ -20,12 +20,21 @@ importers:
 
   apps/api:
     dependencies:
+      '@veyra/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@veyra/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
       hono:
         specifier: ^4.13.8
         version: 4.13.8
+
+  packages/config:
+    dependencies:
+      zod:
+        specifier: ^4.2.1
+        version: 4.6.5
 
   packages/contracts:
     dependencies:

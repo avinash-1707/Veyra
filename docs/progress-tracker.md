@@ -8,7 +8,7 @@ This is the record of what actually happened, not a restatement of planned work.
 
 | Unit | Status | Last updated | Notes |
 |---|---|---|---|
-| U0 Foundations | In progress | 2026-09-20 | Initial pnpm/TypeScript workspace, contract package, Hono API seed-read route, and verification commands added |
+| U0 Foundations | In progress | 2026-09-20 | Local security/operations policies resolved; workspace, API envelope, policy middleware, env validation, observability, audit, and outbox scaffolds added; auth/database/migration integration remains |
 | U1 Baseline discovery | Not started | 2026-09-20 | Depends on U0 |
 | U2 Product evaluation and cart | Not started | 2026-09-20 | Depends on U1 |
 | U3 Checkout and order lifecycle | Not started | 2026-09-20 | Depends on U2 |
@@ -31,13 +31,15 @@ This is the record of what actually happened, not a restatement of planned work.
 | D-02 Deployment provider/topology | Partially resolved: pnpm, Vercel, Neon, Upstash, Qdrant Cloud, Vercel native background services selected; operations details open | ADR-004 |
 | D-03 API framework and auth/session choices | Partially resolved: Hono, Better Auth credentials + Google OAuth, and Nodemailer selected; hardening details open | ADR-004 |
 | D-04 Commerce policy boundary | Confirmed: US/USD simulation policy | ADR-005 |
-| D-05–D-10 Pre-build security and operational controls | Open | ADR-008 |
+| D-05–D-10 Pre-build security and operational controls | Sufficient for U0 local build; production hardening gates remain | ADR-008 |
 | D-11 AI provider operational enablement | Partially resolved: OpenRouter and candidate models selected; operational/model-policy details open | ADR-010 |
 
 ## Log
 
 | Date | Unit | Type | Matches spec? | Summary | Affected area | ADR / D-ID | Follow-up |
 |---|---|---|---|---|---|---|---|
+| 2026-09-20 | U0 | Decision resolution / progress | Yes | Resolved D-06–D-10 for local/prototype U0: route limits, body/deadline ceilings, AI timeout fallback, privacy retention baseline, default-deny operator roles, media quarantine policy, recovery targets, and audited dead-letter replay. Implemented policy fixtures, API body/rate-limit enforcement, production provider env validation, redacted audit/log helpers, and an in-memory outbox drain harness with tests. | Security, operations, observability, outbox | ADR-008 / D-06 / D-07 / D-08 / D-09 / D-10 | Finish U0 by integrating Better Auth/session/CSRF/CORS, Drizzle schema and committed migrations, real provider adapters, and local scheduled worker entrypoints. |
+| 2026-09-20 | U0 | Progress | Yes | Added versioned API success/error envelope contracts, request ID propagation, baseline security headers, 404/error response handling, and environment validation scaffold requiring app/API origins in production while allowing local development defaults. | API foundation and environment contract | ADR-004 / ADR-006 / ADR-008 / D-02 / D-03 / D-05 | Continue U0 with auth/session integration, CSRF/origin/CORS policy enforcement, database/migration foundation, rate limits, and outbox. |
 | 2026-09-20 | U0 | Progress / gap | Yes | Began implementation with pnpm workspace, latest TypeScript strict project references, shared Zod product seed contract, Hono API `/health` and `/v1/products/seed`, Vitest contract/API tests, and runnable `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm verify`. Because current latest TypeScript 7.0.2 is not supported by `typescript-eslint`, lint currently uses a repository source scanner for explicit `any`; unsafe-any typed ESLint remains a follow-up when TS7 support lands or an alternate compatible linter is selected. | Repository foundation and API contract | ADR-004 / ADR-006 / D-02 / D-03 | Continue U0 with auth/security policies, database/migration foundation, outbox, environment validation, and a stronger TS7-compatible lint story. |
 | 2026-09-20 | U0 | Decision resolution | Yes | Confirmed D-04 US/USD simulation commerce policy after owner approval: estimated tax, shipping, delivery, reservation, cancellation, return/refund, and P0 promotion boundaries. | Commerce policy | ADR-005 / D-04 | Create normal and denied fixtures plus simulation disclosure copy before shopper pricing/checkout work. |
 | 2026-09-20 | U0 | Decision resolution | Yes | Added owner selections: pnpm, Neon PostgreSQL, Upstash Redis, Qdrant Cloud, Vercel native scheduled/background services where suitable, Better Auth credentials + Google OAuth, Nodemailer email, USD, and OpenRouter candidate models. Proposed a simple US simulation commerce policy for D-04 confirmation. | Platform, auth, email, data services, commerce policy, AI provider | ADR-004 / ADR-005 / ADR-010 / D-02 / D-03 / D-04 / D-11 | Define provider regions/runtime/job cadence, Better Auth/Nodemailer hardening, and OpenRouter model/timeout/evaluation policy. |
