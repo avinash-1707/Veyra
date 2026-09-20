@@ -76,3 +76,23 @@ export type Cart = {
 export async function getCart() {
   return apiGet<Cart>("/v1/cart");
 }
+
+export type Order = {
+  id: string;
+  status: "confirmed" | "preparing" | "shipped" | "delivered" | "cancelled";
+  paymentStatus: "authorized" | "failed" | "voided";
+  shippingAddress: { recipientName: string; line1: string; line2?: string; city: string; state: string; pinCode: string };
+  deliverySpeed: "standard" | "expedited";
+  items: Array<{ productTitle: string; variantName: string; sellerName: string; quantity: number; unitPrice: { amountMinor: number }; lineSubtotal: { amountMinor: number } }>;
+  totals: Cart["totals"];
+  createdAt: string;
+  history: Array<{ at: string; status: string; message: string }>;
+};
+
+export async function getOrders() {
+  return apiGet<Order[]>("/v1/orders");
+}
+
+export async function getOrder(orderId: string) {
+  return apiGet<Order>(`/v1/orders/${encodeURIComponent(orderId)}`);
+}

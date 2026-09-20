@@ -4,6 +4,7 @@ export const outboxEventTypeSchema = z.enum([
   "catalog.product_published",
   "offer.changed",
   "order.confirmed",
+  "order.delivery_updated",
   "shipment.status_changed",
   "order.delivered",
   "return.requested",

@@ -3,10 +3,16 @@ import {
   addCartItemCommandSchema,
   cartResponseSchema,
   categoryListResponseSchema,
+  checkoutConfirmCommandSchema,
+  checkoutQuoteCommandSchema,
+  checkoutQuoteResponseSchema,
   compareResponseSchema,
   deliveryEstimateResponseSchema,
+  editOrderDeliveryCommandSchema,
   evaluationResponseSchema,
   indianAddressSchema,
+  orderListResponseSchema,
+  orderResponseSchema,
   productDetailResponseSchema,
   productSeedListResponseSchema,
   searchFiltersSchema,
@@ -20,6 +26,7 @@ import { Hono } from "hono";
 import { addCartItem, moveCartItem, readCart, removeCartItem, updateCartItem } from "./modules/cart/cart.js";
 import { catalogSeedProducts } from "./modules/catalog/catalogSeed.js";
 import { compareProducts, estimateDelivery, getEvaluation, getProduct, getProductByOffer, listCategories, searchProducts, searchSuggestions } from "./modules/discovery/discovery.js";
+import { advanceFulfillment, cancelOrder, confirmCheckout, createCheckoutQuote, editOrderDelivery, getOrder, listOrders } from "./modules/orders/orders.js";
 import { browserProtectionMiddleware, fail, ok, policyMiddleware, requestIdMiddleware, securityHeadersMiddleware, type AppBindings } from "./platform/http.js";
 
 export const appEnvironment = parseAppEnvironment(process.env);
@@ -177,6 +184,59 @@ app.delete("/v1/cart/items/:lineId", (context) => {
   return cartMutationResponse(context, removeCartItem(cartIdFromRequest(context.req.header("x-veyra-cart-id")), context.req.param("lineId"), context.req.header("idempotency-key")));
 });
 
+app.post("/v1/checkout/quote", async (context) => {
+  const payload = checkoutQuoteCommandSchema.safeParse(await context.req.json<unknown>());
+  if (!payload.success) return fail(context, 400, "validation_error", "Enter a valid checkout address, delivery speed, and mock payment method.");
+  const result = createCheckoutQuote(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), payload.data);
+  if (result.status !== "ok") return commandFailureResponse(context, result);
+  const response = checkoutQuoteResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
+  return context.json(response);
+});
+
+app.post("/v1/checkout/confirm", async (context) => {
+  const payload = checkoutConfirmCommandSchema.safeParse(await context.req.json<unknown>());
+  if (!payload.success) return fail(context, 400, "validation_error", "Confirm an unexpired checkout quote.");
+  const result = confirmCheckout(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), payload.data, context.req.header("idempotency-key"), context.get("requestId"));
+  if (result.status !== "ok") return commandFailureResponse(context, result);
+  const response = orderResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
+  return context.json(response);
+});
+
+app.get("/v1/orders", (context) => {
+  const response = orderListResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: listOrders(shopperIdFromRequest(context.req.header("x-veyra-shopper-id"))) });
+  return context.json(response);
+});
+
+app.get("/v1/orders/:orderId", (context) => {
+  const result = getOrder(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId"));
+  if (result.status !== "ok") return commandFailureResponse(context, result);
+  const response = orderResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
+  return context.json(response);
+});
+
+app.post("/v1/orders/:orderId/cancel", (context) => {
+  const result = cancelOrder(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId"), context.get("requestId"));
+  if (result.status !== "ok") return commandFailureResponse(context, result);
+  const response = orderResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
+  return context.json(response);
+});
+
+app.patch("/v1/orders/:orderId/delivery", async (context) => {
+  const payload = editOrderDeliveryCommandSchema.safeParse(await context.req.json<unknown>());
+  if (!payload.success) return fail(context, 400, "validation_error", "Enter a complete delivery address and supported delivery speed.");
+  const result = editOrderDelivery(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId"), payload.data);
+  if (result.status !== "ok") return commandFailureResponse(context, result);
+  const response = orderResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
+  return context.json(response);
+});
+
+app.post("/v1/orders/:orderId/advance-fulfillment", (context) => {
+  const result = advanceFulfillment(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId"), context.get("requestId"));
+  if (result.status !== "ok") return commandFailureResponse(context, result);
+  const response = orderResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
+  return context.json(response);
+});
+
 app.post("/v1/delivery/estimate", async (context) => {
   const payload = indianAddressSchema.safeParse(await context.req.json<unknown>());
   if (!payload.success) {
@@ -200,6 +260,10 @@ function cartIdFromRequest(value: string | undefined): string {
   return value === undefined || value.trim().length === 0 ? "local-guest-cart" : value.trim().slice(0, 120);
 }
 
+function shopperIdFromRequest(value: string | undefined): string {
+  return value === undefined || value.trim().length === 0 ? "local-shopper" : value.trim().slice(0, 120);
+}
+
 function cartMutationResponse(context: Parameters<typeof fail>[0], result: ReturnType<typeof addCartItem>) {
   if (result.status === "ok") {
     const response = cartResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.cart });
@@ -207,6 +271,13 @@ function cartMutationResponse(context: Parameters<typeof fail>[0], result: Retur
   }
   if (result.status === "conflict") return fail(context, 409, "idempotency_conflict", result.message);
   if (result.status === "policy_conflict") return fail(context, 409, "policy_conflict", result.message);
+  return fail(context, 404, "not_found", result.message);
+}
+
+function commandFailureResponse(context: Parameters<typeof fail>[0], result: { status: string; message: string }) {
+  if (result.status === "conflict") return fail(context, 409, "idempotency_conflict", result.message);
+  if (result.status === "policy_conflict") return fail(context, 409, "policy_conflict", result.message);
+  if (result.status === "validation") return fail(context, 400, "validation_error", result.message);
   return fail(context, 404, "not_found", result.message);
 }
 

@@ -1,4 +1,5 @@
 export * from "./api.js";
+export * from "./checkout-order.js";
 export * from "./discovery.js";
 export * from "./evaluation-cart.js";
 export * from "./outbox.js";
