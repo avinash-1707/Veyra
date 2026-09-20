@@ -13,22 +13,29 @@ pnpm install
 ## Commands
 
 ```bash
-pnpm typecheck  # strict TypeScript project references
-pnpm lint       # repository lint gate rejecting explicit any
-pnpm test       # Vitest unit/contract tests
-pnpm verify     # typecheck, lint, then tests
+pnpm typecheck         # strict TypeScript project references
+pnpm lint              # repository lint gate rejecting explicit any
+pnpm test              # Vitest unit/contract tests
+pnpm migrations:check  # committed SQL migration sanity check
+pnpm verify            # typecheck, lint, migration check, then tests
 ```
 
 ## Repository layout
 
 ```text
-AGENTS.md                    AI operating manual
-docs/PRD.md                  Product requirements
+AGENTS.md                      AI operating manual
+apps/api/                      Hono API foundation
+apps/worker/                   Scheduled/background worker foundation
+packages/contracts/            Shared API and event contracts
+packages/config/               Environment and service policy config
+packages/db/                   Drizzle schema
+infra/migrations/              Committed SQL migrations
+docs/PRD.md                    Product requirements
 docs/technical-architecture.md Reference architecture
 docs/amazon-baseline-inventory.md Consumer parity inventory
-docs/specs/                  Coordinated product, UX, architecture, plan, ADR, and deferral specs
-docs/CODING_STANDARDS.md     Engineering standards
-docs/progress-tracker.md     Execution record
+docs/specs/                    Coordinated product, UX, architecture, plan, ADR, and deferral specs
+docs/CODING_STANDARDS.md       Engineering standards
+docs/progress-tracker.md       Execution record
 ```
 
 ## Working on this

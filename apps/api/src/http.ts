@@ -1,4 +1,7 @@
+import type { AppEnvironment } from "@veyra/config";
 import { selectRouteLimitPolicy } from "@veyra/config";
+
+import { checkOrigin } from "./auth.js";
 import type { ApiErrorCode } from "@veyra/contracts";
 import type { Context, MiddlewareHandler } from "hono";
 
@@ -35,6 +38,45 @@ export const securityHeadersMiddleware: MiddlewareHandler<AppBindings> = async (
 
   await next();
 };
+
+function cookieValue(cookieHeader: string | undefined, name: string): string | undefined {
+  if (cookieHeader === undefined) {
+    return undefined;
+  }
+
+  const prefix = `${name}=`;
+  return cookieHeader
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(prefix))
+    ?.slice(prefix.length);
+}
+
+function isMutationMethod(method: string): boolean {
+  return ["POST", "PUT", "PATCH", "DELETE"].includes(method);
+}
+
+export function browserProtectionMiddleware(environment: AppEnvironment): MiddlewareHandler<AppBindings> {
+  return async (context, next) => {
+    if (!isMutationMethod(context.req.method)) {
+      await next();
+      return;
+    }
+
+    const originCheck = checkOrigin(context.req.header("origin") ?? null, environment);
+    if (!originCheck.allowed) {
+      return fail(context, 403, "forbidden", "Request origin is not allowed.");
+    }
+
+    const csrfHeader = context.req.header("x-csrf-token");
+    const csrfCookie = cookieValue(context.req.header("cookie"), "veyra_csrf");
+    if (csrfHeader === undefined || csrfCookie === undefined || csrfHeader !== csrfCookie) {
+      return fail(context, 403, "forbidden", "Refresh the page and try again.");
+    }
+
+    await next();
+  };
+}
 
 export const policyMiddleware: MiddlewareHandler<AppBindings> = async (context, next) => {
   const policy = selectRouteLimitPolicy(context.req.method, new URL(context.req.url).pathname);

@@ -3,7 +3,7 @@ import { productSeedListResponseSchema } from "@veyra/contracts";
 import { Hono } from "hono";
 
 import { catalogSeedProducts } from "./catalogSeed.js";
-import { fail, ok, policyMiddleware, requestIdMiddleware, securityHeadersMiddleware, type AppBindings } from "./http.js";
+import { browserProtectionMiddleware, fail, ok, policyMiddleware, requestIdMiddleware, securityHeadersMiddleware, type AppBindings } from "./http.js";
 
 export const appEnvironment = parseAppEnvironment(process.env);
 
@@ -12,6 +12,7 @@ export const app = new Hono<AppBindings>();
 app.use("*", requestIdMiddleware);
 app.use("*", securityHeadersMiddleware);
 app.use("*", policyMiddleware);
+app.use("*", browserProtectionMiddleware(appEnvironment));
 
 app.onError((_error, context) => {
   return fail(context, 500, "internal_error", "Unexpected server error");

@@ -3,6 +3,8 @@
   "references": [
     { "path": "packages/contracts" },
     { "path": "packages/config" },
-    { "path": "apps/api" }
+    { "path": "packages/db" },
+    { "path": "apps/api" },
+    { "path": "apps/worker" }
   ]
 }

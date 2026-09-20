@@ -1,5 +1,5 @@
 {
-  "name": "@veyra/api",
+  "name": "@veyra/worker",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -13,11 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@veyra/config": "workspace:*",
-    "@veyra/contracts": "workspace:*",
-    "better-auth": "^1.7.5",
-    "drizzle-orm": "^0.45.2",
-    "hono": "^4.13.8",
-    "nodemailer": "^10.0.10"
-  }
+    "@veyra/contracts": "workspace:*"
+  },
+  "devDependencies": {}
 }
