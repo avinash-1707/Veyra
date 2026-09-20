@@ -4,11 +4,20 @@ Veyra is a planned AI-native consumer marketplace. It targets a complete convent
 
 ## Quick start
 
-This repository currently contains product and architecture documentation only. pnpm is selected as the package manager, but no application runtime, package configuration, or local setup command has been established.
+Install dependencies with pnpm:
+
+```bash
+pnpm install
+```
 
 ## Commands
 
-No verified commands are available yet.
+```bash
+pnpm typecheck  # strict TypeScript project references
+pnpm lint       # repository lint gate rejecting explicit any
+pnpm test       # Vitest unit/contract tests
+pnpm verify     # typecheck, lint, then tests
+```
 
 ## Repository layout
 

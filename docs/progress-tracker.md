@@ -8,7 +8,7 @@ This is the record of what actually happened, not a restatement of planned work.
 
 | Unit | Status | Last updated | Notes |
 |---|---|---|---|
-| U0 Foundations | Not started | 2026-09-20 | Documentation-only repository |
+| U0 Foundations | In progress | 2026-09-20 | Initial pnpm/TypeScript workspace, contract package, Hono API seed-read route, and verification commands added |
 | U1 Baseline discovery | Not started | 2026-09-20 | Depends on U0 |
 | U2 Product evaluation and cart | Not started | 2026-09-20 | Depends on U1 |
 | U3 Checkout and order lifecycle | Not started | 2026-09-20 | Depends on U2 |
@@ -38,6 +38,7 @@ This is the record of what actually happened, not a restatement of planned work.
 
 | Date | Unit | Type | Matches spec? | Summary | Affected area | ADR / D-ID | Follow-up |
 |---|---|---|---|---|---|---|---|
+| 2026-09-20 | U0 | Progress / gap | Yes | Began implementation with pnpm workspace, latest TypeScript strict project references, shared Zod product seed contract, Hono API `/health` and `/v1/products/seed`, Vitest contract/API tests, and runnable `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm verify`. Because current latest TypeScript 7.0.2 is not supported by `typescript-eslint`, lint currently uses a repository source scanner for explicit `any`; unsafe-any typed ESLint remains a follow-up when TS7 support lands or an alternate compatible linter is selected. | Repository foundation and API contract | ADR-004 / ADR-006 / D-02 / D-03 | Continue U0 with auth/security policies, database/migration foundation, outbox, environment validation, and a stronger TS7-compatible lint story. |
 | 2026-09-20 | U0 | Decision resolution | Yes | Confirmed D-04 US/USD simulation commerce policy after owner approval: estimated tax, shipping, delivery, reservation, cancellation, return/refund, and P0 promotion boundaries. | Commerce policy | ADR-005 / D-04 | Create normal and denied fixtures plus simulation disclosure copy before shopper pricing/checkout work. |
 | 2026-09-20 | U0 | Decision resolution | Yes | Added owner selections: pnpm, Neon PostgreSQL, Upstash Redis, Qdrant Cloud, Vercel native scheduled/background services where suitable, Better Auth credentials + Google OAuth, Nodemailer email, USD, and OpenRouter candidate models. Proposed a simple US simulation commerce policy for D-04 confirmation. | Platform, auth, email, data services, commerce policy, AI provider | ADR-004 / ADR-005 / ADR-010 / D-02 / D-03 / D-04 / D-11 | Define provider regions/runtime/job cadence, Better Auth/Nodemailer hardening, and OpenRouter model/timeout/evaluation policy. |
 | 2026-09-20 | U0 | Decision resolution | Yes | Partially resolved platform choices: Vercel for Next.js web and Hono API, Hono for the API framework, Better Auth for authentication foundation, and OpenRouter for LLM access. Atlas verified current scope does not require WebSockets or persistent backend connections; outbox workers still need scheduled/managed execution. | Deployment, API, auth, AI provider | ADR-004 / ADR-010 / D-02 / D-03 / D-11 | Define Vercel regions/runtime limits/background jobs, Better Auth session/CSRF/CORS/CSP details, and OpenRouter operational/model policy before gated implementation. |
