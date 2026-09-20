@@ -14,6 +14,15 @@ import {
   orderListResponseSchema,
   orderResponseSchema,
   productDetailResponseSchema,
+  returnEligibilityResponseSchema,
+  returnListResponseSchema,
+  returnResponseSchema,
+  reviewResponseSchema,
+  reviewSubmissionSchema,
+  supportConfirmationResponseSchema,
+  supportProposalCommandSchema,
+  supportProposalResponseSchema,
+  createReturnCommandSchema,
   productSeedListResponseSchema,
   searchFiltersSchema,
   searchListResponseSchema,
@@ -27,6 +36,7 @@ import { addCartItem, moveCartItem, readCart, removeCartItem, updateCartItem } f
 import { catalogSeedProducts } from "./modules/catalog/catalogSeed.js";
 import { compareProducts, estimateDelivery, getEvaluation, getProduct, getProductByOffer, listCategories, searchProducts, searchSuggestions } from "./modules/discovery/discovery.js";
 import { advanceFulfillment, cancelOrder, confirmCheckout, createCheckoutQuote, editOrderDelivery, getOrder, listOrders } from "./modules/orders/orders.js";
+import { confirmSupportProposal, createReturn, createSupportProposal, getReturn, getReturnEligibility, listReturns, submitReview } from "./modules/returns/returns.js";
 import { browserProtectionMiddleware, fail, ok, policyMiddleware, requestIdMiddleware, securityHeadersMiddleware, type AppBindings } from "./platform/http.js";
 
 export const appEnvironment = parseAppEnvironment(process.env);
@@ -234,6 +244,59 @@ app.post("/v1/orders/:orderId/advance-fulfillment", (context) => {
   const result = advanceFulfillment(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId"), context.get("requestId"));
   if (result.status !== "ok") return commandFailureResponse(context, result);
   const response = orderResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
+  return context.json(response);
+});
+
+app.get("/v1/orders/:orderId/returns", (context) => {
+  const response = returnListResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: listReturns(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId")) });
+  return context.json(response);
+});
+
+app.get("/v1/orders/:orderId/items/:lineId/return-eligibility", (context) => {
+  const result = getReturnEligibility(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("orderId"), context.req.param("lineId"));
+  if (result.status !== "ok") return commandFailureResponse(context, result);
+  const response = returnEligibilityResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
+  return context.json(response);
+});
+
+app.post("/v1/returns", async (context) => {
+  const payload = createReturnCommandSchema.safeParse(await context.req.json<unknown>());
+  if (!payload.success) return fail(context, 400, "validation_error", "Choose a valid delivered item and return reason.");
+  const result = createReturn(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), payload.data, context.req.header("idempotency-key"), context.get("requestId"));
+  if (result.status !== "ok") return commandFailureResponse(context, result);
+  const response = returnResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
+  return context.json(response);
+});
+
+app.get("/v1/returns/:returnId", (context) => {
+  const result = getReturn(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("returnId"));
+  if (result.status !== "ok") return commandFailureResponse(context, result);
+  const response = returnResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
+  return context.json(response);
+});
+
+app.post("/v1/reviews", async (context) => {
+  const payload = reviewSubmissionSchema.safeParse(await context.req.json<unknown>());
+  if (!payload.success) return fail(context, 400, "validation_error", "Enter a rating, title, and review within the supported limits.");
+  const result = submitReview(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), payload.data, context.req.header("idempotency-key"));
+  if (result.status !== "ok") return commandFailureResponse(context, result);
+  const response = reviewResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
+  return context.json(response);
+});
+
+app.post("/v1/support/proposals", async (context) => {
+  const payload = supportProposalCommandSchema.safeParse(await context.req.json<unknown>());
+  if (!payload.success) return fail(context, 400, "validation_error", "Enter a supported help action and its required context.");
+  const result = createSupportProposal(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), payload.data);
+  if (result.status !== "ok") return commandFailureResponse(context, result);
+  const response = supportProposalResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
+  return context.json(response);
+});
+
+app.post("/v1/support/proposals/:proposalId/confirm", (context) => {
+  const result = confirmSupportProposal(shopperIdFromRequest(context.req.header("x-veyra-shopper-id")), context.req.param("proposalId"), context.req.header("idempotency-key"), context.get("requestId"));
+  if (result.status !== "ok") return commandFailureResponse(context, result);
+  const response = supportConfirmationResponseSchema.parse({ apiVersion: "v1", requestId: context.get("requestId"), data: result.data });
   return context.json(response);
 });
 

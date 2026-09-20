@@ -10,7 +10,7 @@ const initialOfferStock = new Map<string, number>([
   ["018f3f7d-5b68-7aef-9e10-2d890fc8a614", 5]
 ]);
 
-type CommandResult<T> =
+export type CommandResult<T> =
   | { status: "ok"; data: T }
   | { status: "conflict"; message: string }
   | { status: "not_found"; message: string }
@@ -38,6 +38,13 @@ export function resetOrdersForTests(): void {
 export function expireQuoteForTests(quoteId: string): void {
   const quote = quotes.get(quoteId);
   if (quote !== undefined) quotes.set(quoteId, { ...quote, expiresAt: new Date(Date.now() - 1_000).toISOString() });
+}
+
+export function expireDeliveredOrderForTests(orderId: string): void {
+  const order = orders.get(orderId);
+  if (order === undefined) return;
+  const expiredAt = new Date(Date.now() - 31 * 24 * 60 * 60 * 1_000).toISOString();
+  orders.set(orderId, { ...order, history: order.history.map((entry) => entry.status === "delivered" ? { ...entry, at: expiredAt } : entry) });
 }
 
 export function createCheckoutQuote(shopperId: string, command: CheckoutQuoteCommand): CommandResult<CheckoutQuote> {

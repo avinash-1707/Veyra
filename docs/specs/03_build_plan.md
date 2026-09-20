@@ -46,7 +46,7 @@ U4 --> U5
 | D-01 | Conventional baseline precedes AI | PRD §7.1 | U0–U5 | Confirmed | Enforce throughout |
 | D-02 | pnpm, Vercel web/API, Neon PostgreSQL, Upstash Redis, Qdrant Cloud, and Vercel native scheduled/background services selected; final regions, runtime limits, environment topology, job cadence, SLO ownership are pre-staging/production gates | 00 / 02 / ADR-004 | U0 | Sufficient for U0 local build | Before staging/production deployment |
 | D-03 | Hono, Drizzle, committed SQL migrations, Better Auth credentials + Google OAuth, database-backed opaque sessions, CSRF/origin/CORS helpers, and Nodemailer adapter selected and scaffolded for U0 local build; production email/OAuth/origin details are deployment gates | 00 / 02 / ADR-004 | U0 | U0 local foundation implemented | Before staging/production deployment |
-| D-04 | India/INR simulation policy confirmed: full Indian address, estimated GST, PIN-aware shipping/delivery, cancellation, return/refund, reservation, and P0 promotion fixtures | 00 / 02 / ADR-005 | U1–U4 | Confirmed | Build corresponding fixtures before shopper flow |
+| D-04 | India/INR simulation policy confirmed: full Indian address, estimated GST, PIN-aware shipping/delivery, cancellation, refund-only returns, immediate local review publication, explicit support confirmation, reservation, and P0 promotion fixtures | 00 / 02 / ADR-005 | U1–U4 | Local fixtures implemented | Replace with approved production policies before staging |
 | D-05 | Better Auth opaque sessions: 7-day expiry, 1-day rolling refresh, HTTP-only secure SameSite=Lax cookies, central CSRF/origin/CORS/CSP, 15-minute single-use verification/reset tokens | 00 / 02 / ADR-008 | U0 | Sufficient for U0 local build | Harden before public/staging deployment |
 | D-06 | Local/prototype rate-limit, abuse, fraud-signal, endpoint deadline, body/pagination ceiling, limiter-failure, and AI timeout/fallback policy adopted; app spend caps are managed in OpenRouter | 00 / 02 / ADR-008 | U0 | Sufficient for U0 local build | Harden before public/staging exposure |
 | D-07 | Local/prototype data classification, 180-day behavior analytics retention, provider-data minimization, and production export/deletion/incident gates adopted | 00 / 02 / ADR-008 | U0 | Sufficient for U0 local build | Before production data collection/provider enablement |
@@ -96,7 +96,7 @@ D-04 is confirmed, but each corresponding flow still needs policy fixtures befor
 ### U4 — Returns, reviews, and support
 **Work packages:** delivered-item eligibility; review moderation/reporting; return/refund/replacement transitions; support read tools; confirmable action proposals; notifications; audit/ownership tests.
 **Exit evidence:** cross-user denial, duplicate review prevention, expired/previous return handling, replay-safe support confirmation, and AI-unavailable conventional routes are proven.
-**Blocked by:** explicit return-window, replacement, refund, moderation, and notification policies.
+**Blocked by:** production replacement, moderation/reporting, notifications, and persistence policies; local fixtures use refund-only returns, immediate bounded-text review publication, and deterministic explicit support confirmation.
 
 ### U5 — Intelligent shopping
 **Work packages:** taxonomy/schema versions; indexing pipeline; retrieval/ranker fixtures; intent parsing; evidence bundles; template-first explanations; comparison/review evaluation; support-tool allowlist; provider fallback; AI telemetry.

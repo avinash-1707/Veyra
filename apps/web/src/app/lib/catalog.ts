@@ -96,3 +96,22 @@ export async function getOrders() {
 export async function getOrder(orderId: string) {
   return apiGet<Order>(`/v1/orders/${encodeURIComponent(orderId)}`);
 }
+
+export type ReturnRequest = {
+  id: string;
+  orderId: string;
+  item: { cartLineId: string; productTitle: string; variantName: string };
+  reason: string;
+  state: "requested" | "received" | "approved" | "refunded" | "rejected" | "cancelled";
+  refundStatus: "not_started" | "pending" | "refunded";
+  createdAt: string;
+  history: Array<{ at: string; status: string; message: string }>;
+};
+
+export async function getOrderReturns(orderId: string) {
+  return apiGet<ReturnRequest[]>(`/v1/orders/${encodeURIComponent(orderId)}/returns`);
+}
+
+export async function getReturnRequest(returnId: string) {
+  return apiGet<ReturnRequest>(`/v1/returns/${encodeURIComponent(returnId)}`);
+}
